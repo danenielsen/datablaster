@@ -1,4 +1,5 @@
 mod args;
+mod data_gen;
 
 fn main() {
     let matches = args::parse_args();

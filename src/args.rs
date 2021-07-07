@@ -1,5 +1,5 @@
 extern crate clap;
-use clap::{Arg, App, SubCommand, ArgMatches};
+use clap::{Arg, App, ArgMatches};
 
 pub static RECORDS_TO_CREATE: &str = "count";
 
