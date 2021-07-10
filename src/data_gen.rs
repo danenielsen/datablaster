@@ -1,28 +1,54 @@
 
-
-
-trait Record {}
-
-struct TestRecord {
+#[derive(Debug)]
+pub enum ColumnType<'a> {
+    Integer,
+    Float,
+    String,
+    Record(RecordSchema<'a>),
+    List(Box<ColumnType<'a>>),
 }
 
-impl Record for TestRecord {
-
+pub struct Column<'a, T> {
+    pub name: &'a str,
+    pub data: T,
 }
 
-struct RecordSchema {
-    records_schemas: Option<Vec<Box<RecordSchema>>>,
-
+impl<'a, T> Column<'a, T> {
+    pub fn new(name: &'a str, data: T) -> Column<'a, T> {
+        Column {name: name, data: data}
+    }
 }
 
-impl RecordSchema {
-    fn new() -> Self {
+#[derive(Debug)]
+pub struct ColumnSchema<'a> {
+    pub name: &'a str,
+    pub col_type: ColumnType<'a>,
+}
+
+impl<'a> ColumnSchema<'a> {
+    pub fn new(name: &'a str, col_type: ColumnType<'a>) -> ColumnSchema<'a> {
+        ColumnSchema {name: name, col_type: col_type}
+    }
+}
+
+#[derive(Debug)]
+pub struct RecordSchema<'a> {
+    column_list: Vec<ColumnSchema<'a>>,
+}
+
+impl<'a> RecordSchema<'a> {
+    pub fn new() -> Self {
         RecordSchema{
-            records_schemas: None,
+            column_list: Vec::new(),
         }
     }
 
-    fn generate() -> Box<dyn Record> {
-        Box::new(TestRecord{})
+    pub fn add_column(&mut self, column: ColumnSchema<'a>) {
+        self.column_list.push(column);
+    }
+
+    pub fn with_column(mut self, column: ColumnSchema<'a>) -> Self {
+        self.add_column(column);
+        self
     }
 }
