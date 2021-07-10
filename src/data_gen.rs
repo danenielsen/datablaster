@@ -42,6 +42,10 @@ impl<'a> RecordSchema<'a> {
             column_list: Vec::new(),
         }
     }
+    
+    pub fn iter(&self) -> impl Iterator<Item = &ColumnSchema<'a>> {
+        self.column_list.iter()
+    }
 
     pub fn add_column(&mut self, column: ColumnSchema<'a>) {
         self.column_list.push(column);
@@ -50,5 +54,13 @@ impl<'a> RecordSchema<'a> {
     pub fn with_column(mut self, column: ColumnSchema<'a>) -> Self {
         self.add_column(column);
         self
+    }
+}
+
+impl<'a> IntoIterator for RecordSchema<'a> {
+    type Item = ColumnSchema<'a>;
+    type IntoIter = std::vec::IntoIter<ColumnSchema<'a>>;
+    fn into_iter(self) -> Self::IntoIter {
+        self.column_list.into_iter()
     }
 }
