@@ -48,7 +48,11 @@ fn main() {
                 .with_column(ColumnSchema::new("amount", ColumnType::Float))
         )));
 
+    let second_schema = schema.clone().with_column(ColumnSchema::new("customer", ColumnType::String));
+
     println!("{:?}", schema);
+    println!("{:?}", second_schema);
+
     //for x in 0..number_of_records {
     //    println!("{} Hello, world!", x);
     //}

@@ -1,5 +1,5 @@
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum ColumnType<'a> {
     Integer,
     Float,
@@ -19,7 +19,7 @@ impl<'a, T> Column<'a, T> {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct ColumnSchema<'a> {
     pub name: &'a str,
     pub col_type: ColumnType<'a>,
@@ -31,7 +31,7 @@ impl<'a> ColumnSchema<'a> {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct RecordSchema<'a> {
     column_list: Vec<ColumnSchema<'a>>,
 }
