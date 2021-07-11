@@ -1,7 +1,7 @@
 extern crate clap;
 use clap::{Arg, App, ArgMatches};
 
-pub static RECORDS_TO_CREATE: &str = "count";
+pub const RECORDS_TO_CREATE: &str = "count";
 
 pub fn parse_args<'a>() -> ArgMatches<'a> {
     let matches = App::new("DataMe")

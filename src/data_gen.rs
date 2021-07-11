@@ -1,83 +1,44 @@
-use std::collections::HashMap;
+use rand::prelude::*;
+use crate::schema::{ColumnType, RecordSchema};
+use crate::data_repr::{ColumnData, Tuple};
 
-// Data Repr
-#[derive(Debug, Clone)]
-pub enum ColumnData<'a> {
-    Integer(i64),
-    Float(f32),
-    String(&'a str),
-    Record(Tuple<'a>),
-    List(Vec<ColumnData<'a>>),
+
+pub fn create_data_from_schema<'a>(schema: &'a RecordSchema<'a>) -> Tuple<'a> {
+    let tuple = Tuple::new();
+    create_data_from_schema_recurse(schema, tuple)
 }
 
-#[derive(Debug, Clone)]
-pub struct Tuple<'a> {
-    fields: HashMap<&'a str, ColumnData<'a>>,
-}
 
-impl<'a> Tuple<'a> {
-    pub fn new() -> Tuple<'a> {
-        Tuple { fields: HashMap::new() }
+fn create_data_from_schema_recurse<'a>(schema: &'a RecordSchema<'a>, mut tuple: Tuple<'a>) -> Tuple<'a> {
+    for cs in schema.iter() {
+        tuple.add_column_data(cs.name, create_data_from_column_type(&cs.col_type))
     }
-
-    pub fn add_column_data(&mut self, name: &'a str, data: ColumnData<'a>) {
-        self.fields.insert(name, data);
-    }
+    tuple
 }
 
 
-// Schema Code
-#[derive(Debug, Clone)]
-pub enum ColumnType<'a> {
-    Integer,
-    Float,
-    String,
-    Record(RecordSchema<'a>),
-    List(Box<ColumnType<'a>>),
-}
-
-#[derive(Debug, Clone)]
-pub struct ColumnSchema<'a> {
-    pub name: &'a str,
-    pub col_type: ColumnType<'a>,
-}
-
-impl<'a> ColumnSchema<'a> {
-    pub fn new(name: &'a str, col_type: ColumnType<'a>) -> ColumnSchema<'a> {
-        ColumnSchema {name: name, col_type: col_type}
-    }
-}
-
-#[derive(Debug, Clone)]
-pub struct RecordSchema<'a> {
-    column_list: Vec<ColumnSchema<'a>>,
-}
-
-impl<'a> RecordSchema<'a> {
-    pub fn new() -> Self {
-        RecordSchema{
-            column_list: Vec::new(),
-        }
-    }
-    
-    pub fn iter(&self) -> impl Iterator<Item = &ColumnSchema<'a>> {
-        self.column_list.iter()
-    }
-
-    pub fn add_column(&mut self, column: ColumnSchema<'a>) {
-        self.column_list.push(column);
-    }
-
-    pub fn with_column(mut self, column: ColumnSchema<'a>) -> Self {
-        self.add_column(column);
-        self
-    }
-}
-
-impl<'a> IntoIterator for RecordSchema<'a> {
-    type Item = ColumnSchema<'a>;
-    type IntoIter = std::vec::IntoIter<ColumnSchema<'a>>;
-    fn into_iter(self) -> Self::IntoIter {
-        self.column_list.into_iter()
+fn create_data_from_column_type<'a>(col_type: &'a ColumnType) -> ColumnData<'a> {
+    let mut rng: ThreadRng = rand::thread_rng();
+    match &col_type {
+        ColumnType::Float => {
+            ColumnData::Float(rng.gen_range(0.0..500.0))
+        },
+        ColumnType::Integer => {
+            ColumnData::Integer(rng.gen_range(-1000..1000))
+        },
+        ColumnType::String => {
+            ColumnData::String("placeholder")
+        },
+        ColumnType::List(v) => {
+            let mut list = Vec::new();
+            for _ in 0..10 {
+                list.push(create_data_from_column_type(v))
+            };
+            ColumnData::List(list)
+        },
+        ColumnType::Record(v) => {
+            let sub_tuple = create_data_from_schema_recurse(v, Tuple::new());
+            ColumnData::Record(sub_tuple)
+        },
     }
 }
