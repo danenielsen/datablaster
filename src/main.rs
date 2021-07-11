@@ -35,12 +35,13 @@ fn create_data_from_schema_recurse<'a>(schema: &'a RecordSchema<'a>, mut tuple: 
 }
 
 fn create_data_from_column_type<'a>(col_type: &'a ColumnType) -> ColumnData<'a> {
+    let mut rng: ThreadRng = rand::thread_rng();
     match &col_type {
         ColumnType::Float => {
-            ColumnData::Float(rand::random())
+            ColumnData::Float(rng.gen_range(0.0..500.0))
         },
         ColumnType::Integer => {
-            ColumnData::Integer(rand::random())
+            ColumnData::Integer(rng.gen_range(-1000..1000))
         },
         ColumnType::String => {
             ColumnData::String("placeholder")
