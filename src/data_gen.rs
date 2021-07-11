@@ -1,4 +1,32 @@
+use std::collections::HashMap;
 
+// Data Repr
+#[derive(Debug, Clone)]
+pub enum ColumnData<'a> {
+    Integer(i64),
+    Float(f32),
+    String(&'a str),
+    Record(Tuple<'a>),
+    List(Vec<ColumnData<'a>>),
+}
+
+#[derive(Debug, Clone)]
+pub struct Tuple<'a> {
+    fields: HashMap<&'a str, ColumnData<'a>>,
+}
+
+impl<'a> Tuple<'a> {
+    pub fn new() -> Tuple<'a> {
+        Tuple { fields: HashMap::new() }
+    }
+
+    pub fn add_column_data(&mut self, name: &'a str, data: ColumnData<'a>) {
+        self.fields.insert(name, data);
+    }
+}
+
+
+// Schema Code
 #[derive(Debug, Clone)]
 pub enum ColumnType<'a> {
     Integer,
@@ -6,17 +34,6 @@ pub enum ColumnType<'a> {
     String,
     Record(RecordSchema<'a>),
     List(Box<ColumnType<'a>>),
-}
-
-pub struct Column<'a, T> {
-    pub name: &'a str,
-    pub data: T,
-}
-
-impl<'a, T> Column<'a, T> {
-    pub fn new(name: &'a str, data: T) -> Column<'a, T> {
-        Column {name: name, data: data}
-    }
 }
 
 #[derive(Debug, Clone)]
