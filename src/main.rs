@@ -2,6 +2,7 @@ mod args;
 mod schema;
 mod data_repr;
 mod data_gen;
+mod writer;
 
 use schema::{ColumnType, RecordSchema, ColumnSchema};
 use data_gen::*;
@@ -36,27 +37,28 @@ fn main() {
     let schema = RecordSchema::new()
         .with_column(ColumnSchema::new("total", ColumnType::Float))
         .with_column(ColumnSchema::new("transaction_id", ColumnType::Integer))
-        .with_column(ColumnSchema::new("line_items", ColumnType::Record(
-            RecordSchema::new()
-                .with_column(ColumnSchema::new("item", ColumnType::String))
-                .with_column(ColumnSchema::new("sub_items", ColumnType::Record(
-                    RecordSchema::new()
-                        .with_column(ColumnSchema::new("name", ColumnType::String))
-                        .with_column(ColumnSchema::new("amount", ColumnType::Integer))
-                        .with_column(ColumnSchema::new("cost", ColumnType::Float))
-                )))
-                .with_column(ColumnSchema::new("amount", ColumnType::Integer))
-                .with_column(ColumnSchema::new("cost", ColumnType::Float))
-        )))
-        .with_column(ColumnSchema::new("sales_agents", ColumnType::List(Box::new(ColumnType::String))))
-        .with_column(ColumnSchema::new("team", ColumnType::List(Box::new(
+        .with_column(ColumnSchema::new("line_items", ColumnType::List(Box::new(
             ColumnType::Record(
                 RecordSchema::new()
+                    .with_column(ColumnSchema::new("item", ColumnType::String))
+                    .with_column(ColumnSchema::new("sub_items", ColumnType::Record(
+                        RecordSchema::new()
+                            .with_column(ColumnSchema::new("name", ColumnType::String))
+                            .with_column(ColumnSchema::new("amount", ColumnType::Integer))
+                            .with_column(ColumnSchema::new("cost", ColumnType::Float))
+                    )))
+                    .with_column(ColumnSchema::new("amount", ColumnType::Integer))
+                    .with_column(ColumnSchema::new("cost", ColumnType::Float))
+            )))
+        ))
+        .with_column(ColumnSchema::new("sales_agents", ColumnType::List(Box::new(ColumnType::String))))
+        .with_column(ColumnSchema::new("team", ColumnType::Record(
+            RecordSchema::new()
                 .with_column(ColumnSchema::new("project_manager", ColumnType::String))
                 .with_column(ColumnSchema::new("team_members", ColumnType::List(Box::new(ColumnType::String))))
                 .with_column(ColumnSchema::new("budget", ColumnType::Float))
             )
-        ))))
+        ))
     ;
 
     println!("Iterating");
@@ -66,7 +68,8 @@ fn main() {
 
     for _ in 0..number_of_records {
         let output_data = create_data_from_schema(&schema);
-        println!("{:?}", output_data);
+        println!("Raw: {:?}", output_data);
+        println!("json: {}", writer::to_pretty_json_data(&output_data))
     }
     
 }

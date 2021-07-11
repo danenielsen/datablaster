@@ -31,7 +31,7 @@ fn create_data_from_column_type<'a>(col_type: &'a ColumnType) -> ColumnData<'a> 
         },
         ColumnType::List(v) => {
             let mut list = Vec::new();
-            for _ in 0..10 {
+            for _ in 0..4 {
                 list.push(create_data_from_column_type(v))
             };
             ColumnData::List(list)
