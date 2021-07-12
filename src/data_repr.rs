@@ -2,43 +2,43 @@ use std::collections::HashMap;
 
 // Data Repr
 #[derive(Debug, Clone)]
-pub enum ColumnData<'a> {
+pub enum ColumnData {
     Integer(i64),
-    Float(f32),
-    String(&'a str),
-    Record(Tuple<'a>),
-    List(Vec<ColumnData<'a>>),
+    Float(f64),
+    String(String),
+    Record(Tuple),
+    List(Vec<ColumnData>),
 }
 
 
 #[derive(Debug, Clone)]
-pub struct Tuple<'a> {
-    fields: HashMap<String, ColumnData<'a>>,
+pub struct Tuple {
+    fields: HashMap<String, ColumnData>,
 }
 
-type TupleIter<'a> = std::collections::hash_map::IntoIter<String, ColumnData<'a>>;
-type TupleIter2<'a> = std::collections::hash_map::Iter<'a, String, ColumnData<'a>>;
+type TupleIter = std::collections::hash_map::IntoIter<String, ColumnData>;
+type TupleIter2<'a> = std::collections::hash_map::Iter<'a, String, ColumnData>;
 
-impl<'a> Tuple<'a> {
-    pub fn new() -> Tuple<'a> {
+impl Tuple {
+    pub fn new() -> Tuple {
         Tuple { fields: HashMap::new() }
     }
 
-    pub fn add_column_data<S: Into<String>>(&mut self, name: S, data: ColumnData<'a>) {
+    pub fn add_column_data<S: Into<String>>(&mut self, name: S, data: ColumnData) {
         self.fields.insert(name.into(), data);
     }
 }
 
-impl<'a> IntoIterator for Tuple<'a> {
-    type Item = (String, ColumnData<'a>);
-    type IntoIter = TupleIter<'a>;
+impl IntoIterator for Tuple {
+    type Item = (String, ColumnData);
+    type IntoIter = TupleIter;
     fn into_iter(self) -> Self::IntoIter {
         self.fields.into_iter()
     }
 }
 
-impl<'a> IntoIterator for &'a Tuple<'a> {
-    type Item = (&'a String, &'a ColumnData<'a>);
+impl<'a> IntoIterator for &'a Tuple {
+    type Item = (&'a String, &'a ColumnData);
     type IntoIter = TupleIter2<'a>;
     fn into_iter(self) -> Self::IntoIter {
         self.fields.iter()

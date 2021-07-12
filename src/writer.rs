@@ -22,7 +22,7 @@ fn to_json_data_recurse(tuple: &Tuple) -> Value {
     for (field_name, field_value) in tuple {
         json_map.insert(field_name.to_string(), column_data_to_json_value(field_value));
     }
-    Value::Object(json_map)
+    json!(json_map)
 }
 
 fn column_data_to_json_value(col_data: &ColumnData) -> Value {

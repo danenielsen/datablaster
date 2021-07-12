@@ -1,56 +1,124 @@
+use rand::prelude::*;
 
 
-// Schema Code
+/**
+ * FieldSchema
+ */
 #[derive(Debug, Clone)]
-pub enum ColumnType<'a> {
-    Integer,
-    Float,
-    String,
-    Record(RecordSchema<'a>),
-    List(Box<ColumnType<'a>>),
+pub struct FieldSchema {
+    name: String,
+    field_type: FieldType
 }
 
-#[derive(Debug, Clone)]
-pub struct ColumnSchema<'a> {
-    pub name: &'a str,
-    pub col_type: ColumnType<'a>,
-}
+impl FieldSchema {
+    pub fn new<S: Into<String>>(name: S, field_type: FieldType) -> Self {
+        FieldSchema {
+            name: name.into(),
+            field_type: field_type
+        }
+    }
 
-impl<'a> ColumnSchema<'a> {
-    pub fn new(name: &'a str, col_type: ColumnType<'a>) -> ColumnSchema<'a> {
-        ColumnSchema {name: name, col_type: col_type}
+    pub fn get_name(&self) -> &str {
+        self.name.as_str()
+    }
+
+    pub fn get_type(&self) -> &FieldType {
+        &self.field_type
     }
 }
 
+
+/**
+ * FieldDefinition
+ */
 #[derive(Debug, Clone)]
-pub struct RecordSchema<'a> {
-    column_list: Vec<ColumnSchema<'a>>,
+pub struct FieldDefinition<T> {
+    generator: fn() -> T,
 }
 
-impl<'a> RecordSchema<'a> {
+pub trait DefaultGenerator {
+    fn default_gen() -> fn() -> Self;
+}
+
+impl<T> FieldDefinition<T> {
+    pub fn new(gen_func: fn() -> T) -> FieldDefinition<T> {
+        FieldDefinition { generator: gen_func }
+    }
+    pub fn generate(&self) -> T {
+        (self.generator)()
+    }
+}
+
+impl<T: DefaultGenerator> FieldDefinition<T> {
+    pub fn default() -> FieldDefinition<T> {
+        FieldDefinition::new(T::default_gen())
+    }
+}
+
+impl DefaultGenerator for i64 {
+    fn default_gen() -> fn() -> Self {
+        || rand::thread_rng().gen_range(0..100)
+    }
+}
+
+impl DefaultGenerator for f64 {
+    fn default_gen() -> fn() -> Self {
+        || rand::thread_rng().gen_range(0.0..100.0)
+    }
+}
+
+impl DefaultGenerator for std::string::String {
+    fn default_gen() -> fn() -> Self {
+        || "placeholder".to_string()
+    }
+}
+
+
+/**
+ * FieldType
+ */
+#[derive(Debug, Clone)]
+pub enum FieldType {
+    Integer(FieldDefinition<i64>),
+    Float(FieldDefinition<f64>),
+    String(FieldDefinition<std::string::String>),
+    List(Box<FieldType>),
+    Record(RecordSchema),
+}
+
+
+/**
+ * RecordSchema
+ */
+#[derive(Debug, Clone)]
+pub struct RecordSchema {
+    column_list: Vec<FieldSchema>,
+}
+
+impl RecordSchema {
     pub fn new() -> Self {
-        RecordSchema{
+        RecordSchema {
             column_list: Vec::new(),
         }
     }
     
-    pub fn iter(&self) -> impl Iterator<Item = &ColumnSchema<'a>> {
+    pub fn iter(&self) -> impl Iterator<Item = &FieldSchema> {
         self.column_list.iter()
     }
 
-    pub fn add_column(&mut self, column: ColumnSchema<'a>) {
+    pub fn add_column(&mut self, column: FieldSchema) {
         self.column_list.push(column);
     }
 
-    pub fn with_column(mut self, column: ColumnSchema<'a>) -> Self {
+    pub fn with_column(mut self, column: FieldSchema) -> Self {
         self.add_column(column);
         self
     }
 }
 
-impl<'a> IntoIterator for RecordSchema<'a> {
-    type Item = ColumnSchema<'a>;
-    type IntoIter = std::vec::IntoIter<ColumnSchema<'a>>;
+impl IntoIterator for RecordSchema {
+    type Item = FieldSchema;
+    type IntoIter = std::vec::IntoIter<FieldSchema>;
     fn into_iter(self) -> Self::IntoIter {
         self.column_list.into_iter()
     }

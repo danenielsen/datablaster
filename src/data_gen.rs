@@ -1,42 +1,40 @@
-use rand::prelude::*;
-use crate::schema::{ColumnType, RecordSchema};
+use crate::schema::{FieldType, RecordSchema};
 use crate::data_repr::{ColumnData, Tuple};
 
 
-pub fn create_data_from_schema<'a>(schema: &'a RecordSchema<'a>) -> Tuple<'a> {
+pub fn create_data_from_schema(schema: &RecordSchema) -> Tuple {
     let tuple = Tuple::new();
     create_data_from_schema_recurse(schema, tuple)
 }
 
 
-fn create_data_from_schema_recurse<'a>(schema: &'a RecordSchema<'a>, mut tuple: Tuple<'a>) -> Tuple<'a> {
+fn create_data_from_schema_recurse<'a>(schema: &'a RecordSchema, mut tuple: Tuple) -> Tuple {
     for cs in schema.iter() {
-        tuple.add_column_data(cs.name, create_data_from_column_type(&cs.col_type))
+        tuple.add_column_data(cs.get_name(), create_data_from_column_type(cs.get_type()))
     }
     tuple
 }
 
 
-fn create_data_from_column_type<'a>(col_type: &'a ColumnType) -> ColumnData<'a> {
-    let mut rng: ThreadRng = rand::thread_rng();
+fn create_data_from_column_type<'a>(col_type: &'a FieldType) -> ColumnData {
     match &col_type {
-        ColumnType::Float => {
-            ColumnData::Float(rng.gen_range(0.0..500.0))
+        FieldType::Float(def) => {
+            ColumnData::Float(def.generate())
         },
-        ColumnType::Integer => {
-            ColumnData::Integer(rng.gen_range(-1000..1000))
+        FieldType::Integer(def) => {
+            ColumnData::Integer(def.generate())
         },
-        ColumnType::String => {
-            ColumnData::String("placeholder")
+        FieldType::String(def) => {
+            ColumnData::String(def.generate())
         },
-        ColumnType::List(v) => {
+        FieldType::List(v) => {
             let mut list = Vec::new();
             for _ in 0..4 {
                 list.push(create_data_from_column_type(v))
             };
             ColumnData::List(list)
         },
-        ColumnType::Record(v) => {
+        FieldType::Record(v) => {
             let sub_tuple = create_data_from_schema_recurse(v, Tuple::new());
             ColumnData::Record(sub_tuple)
         },

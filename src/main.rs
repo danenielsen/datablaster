@@ -4,7 +4,7 @@ mod data_repr;
 mod data_gen;
 mod writer;
 
-use schema::{ColumnType, RecordSchema, ColumnSchema};
+use schema::{FieldType, RecordSchema, FieldSchema, FieldDefinition};
 use data_gen::*;
 
 fn iterate_over_schema(schema: &RecordSchema, ) {
@@ -14,9 +14,9 @@ fn iterate_over_schema(schema: &RecordSchema, ) {
 
 fn iterate_over_schema_internal(schema: &RecordSchema, indent: &str) {
     for (i, col_schema) in schema.iter().enumerate() {
-        match &col_schema.col_type {
-            ColumnType::Record(rs) => {
-                println!("{}{}: ColumnSchema {{ name: \"{}\", col_type: \"Record\" }}", indent, i, col_schema.name);
+        match col_schema.get_type() {
+            FieldType::Record(rs) => {
+                println!("{}{}: ColumnSchema {{ name: \"{}\", col_type: \"Record\" }}", indent, i, col_schema.get_name());
                 iterate_over_schema_internal(rs, [indent, "  "].join("").as_str())
             },
             _ => println!("{}{}: {:?}", indent, i, col_schema),
@@ -35,28 +35,26 @@ fn main() {
         };
 
     let schema = RecordSchema::new()
-        .with_column(ColumnSchema::new("total", ColumnType::Float))
-        .with_column(ColumnSchema::new("transaction_id", ColumnType::Integer))
-        .with_column(ColumnSchema::new("line_items", ColumnType::List(Box::new(
-            ColumnType::Record(
-                RecordSchema::new()
-                    .with_column(ColumnSchema::new("item", ColumnType::String))
-                    .with_column(ColumnSchema::new("sub_items", ColumnType::Record(
-                        RecordSchema::new()
-                            .with_column(ColumnSchema::new("name", ColumnType::String))
-                            .with_column(ColumnSchema::new("amount", ColumnType::Integer))
-                            .with_column(ColumnSchema::new("cost", ColumnType::Float))
-                    )))
-                    .with_column(ColumnSchema::new("amount", ColumnType::Integer))
-                    .with_column(ColumnSchema::new("cost", ColumnType::Float))
-            )))
-        ))
-        .with_column(ColumnSchema::new("sales_agents", ColumnType::List(Box::new(ColumnType::String))))
-        .with_column(ColumnSchema::new("team", ColumnType::Record(
+        .with_column(FieldSchema::new("total", FieldType::Float(FieldDefinition::default())))
+        .with_column(FieldSchema::new("transaction_id", FieldType::Integer(FieldDefinition::default())))
+        .with_column(FieldSchema::new("line_items", FieldType::List(Box::new(FieldType::Record(
             RecordSchema::new()
-                .with_column(ColumnSchema::new("project_manager", ColumnType::String))
-                .with_column(ColumnSchema::new("team_members", ColumnType::List(Box::new(ColumnType::String))))
-                .with_column(ColumnSchema::new("budget", ColumnType::Float))
+                .with_column(FieldSchema::new("item", FieldType::String(FieldDefinition::default())))
+                .with_column(FieldSchema::new("sub_items", FieldType::Record(
+                    RecordSchema::new()
+                        .with_column(FieldSchema::new("name", FieldType::String(FieldDefinition::default())))
+                        .with_column(FieldSchema::new("amount", FieldType::Integer(FieldDefinition::default())))
+                        .with_column(FieldSchema::new("cost", FieldType::Float(FieldDefinition::default())))
+                )))
+                .with_column(FieldSchema::new("amount", FieldType::Integer(FieldDefinition::default())))
+                .with_column(FieldSchema::new("cost", FieldType::Float(FieldDefinition::default())))
+        )))))
+        .with_column(FieldSchema::new("sales_agents", FieldType::List(Box::new(FieldType::String(FieldDefinition::default())))))
+        .with_column(FieldSchema::new("team", FieldType::Record(
+            RecordSchema::new()
+                .with_column(FieldSchema::new("project_manager", FieldType::String(FieldDefinition::default())))
+                .with_column(FieldSchema::new("team_members", FieldType::List(Box::new(FieldType::String(FieldDefinition::default())))))
+                .with_column(FieldSchema::new("budget", FieldType::Float(FieldDefinition::default())))
             )
         ))
     ;
