@@ -4,7 +4,7 @@ mod data_repr;
 mod data_gen;
 mod writer;
 
-use schema::{FieldType, RecordSchema, FieldSchema, FieldDefinition};
+use schema::{FieldType, RecordSchema, FieldSchema};
 use data_gen::*;
 
 fn iterate_over_schema(schema: &RecordSchema, ) {
@@ -35,26 +35,26 @@ fn main() {
         };
 
     let schema = RecordSchema::new()
-        .with_column(FieldSchema::new("total", FieldType::Float(FieldDefinition::default())))
-        .with_column(FieldSchema::new("transaction_id", FieldType::Integer(FieldDefinition::default())))
+        .with_column(FieldSchema::new("total", FieldType::Float(Default::default())))
+        .with_column(FieldSchema::new("transaction_id", FieldType::Integer(Default::default())))
         .with_column(FieldSchema::new("line_items", FieldType::List(Box::new(FieldType::Record(
             RecordSchema::new()
-                .with_column(FieldSchema::new("item", FieldType::String(FieldDefinition::default())))
+                .with_column(FieldSchema::new("item", FieldType::String(Default::default())))
                 .with_column(FieldSchema::new("sub_items", FieldType::Record(
                     RecordSchema::new()
-                        .with_column(FieldSchema::new("name", FieldType::String(FieldDefinition::default())))
-                        .with_column(FieldSchema::new("amount", FieldType::Integer(FieldDefinition::default())))
-                        .with_column(FieldSchema::new("cost", FieldType::Float(FieldDefinition::default())))
+                        .with_column(FieldSchema::new("name", FieldType::String(Default::default())))
+                        .with_column(FieldSchema::new("amount", FieldType::Integer(Default::default())))
+                        .with_column(FieldSchema::new("cost", FieldType::Float(Default::default())))
                 )))
-                .with_column(FieldSchema::new("amount", FieldType::Integer(FieldDefinition::default())))
-                .with_column(FieldSchema::new("cost", FieldType::Float(FieldDefinition::default())))
+                .with_column(FieldSchema::new("amount", FieldType::Integer(Default::default())))
+                .with_column(FieldSchema::new("cost", FieldType::Float(Default::default())))
         )))))
-        .with_column(FieldSchema::new("sales_agents", FieldType::List(Box::new(FieldType::String(FieldDefinition::default())))))
+        .with_column(FieldSchema::new("sales_agents", FieldType::List(Box::new(FieldType::String(Default::default())))))
         .with_column(FieldSchema::new("team", FieldType::Record(
             RecordSchema::new()
-                .with_column(FieldSchema::new("project_manager", FieldType::String(FieldDefinition::default())))
-                .with_column(FieldSchema::new("team_members", FieldType::List(Box::new(FieldType::String(FieldDefinition::default())))))
-                .with_column(FieldSchema::new("budget", FieldType::Float(FieldDefinition::default())))
+                .with_column(FieldSchema::new("project_manager", FieldType::String(Default::default())))
+                .with_column(FieldSchema::new("team_members", FieldType::List(Box::new(FieldType::String(Default::default())))))
+                .with_column(FieldSchema::new("budget", FieldType::Float(Default::default())))
             )
         ))
     ;

@@ -14,7 +14,7 @@ impl FieldSchema {
     pub fn new<S: Into<String>>(name: S, field_type: FieldType) -> Self {
         FieldSchema {
             name: name.into(),
-            field_type: field_type
+            field_type
         }
     }
 
@@ -31,7 +31,7 @@ impl FieldSchema {
 /**
  * FieldDefinition
  */
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Copy)]
 pub struct FieldDefinition<T> {
     generator: fn() -> T,
 }
@@ -44,13 +44,14 @@ impl<T> FieldDefinition<T> {
     pub fn new(gen_func: fn() -> T) -> FieldDefinition<T> {
         FieldDefinition { generator: gen_func }
     }
+
     pub fn generate(&self) -> T {
         (self.generator)()
     }
 }
 
-impl<T: DefaultGenerator> FieldDefinition<T> {
-    pub fn default() -> FieldDefinition<T> {
+impl<T: DefaultGenerator> Default for FieldDefinition<T> {
+    fn default() -> FieldDefinition<T> {
         FieldDefinition::new(T::default_gen())
     }
 }

@@ -8,7 +8,7 @@ pub fn create_data_from_schema(schema: &RecordSchema) -> Tuple {
 }
 
 
-fn create_data_from_schema_recurse<'a>(schema: &'a RecordSchema, mut tuple: Tuple) -> Tuple {
+fn create_data_from_schema_recurse(schema: &RecordSchema, mut tuple: Tuple) -> Tuple {
     for cs in schema.iter() {
         tuple.add_column_data(cs.get_name(), create_data_from_column_type(cs.get_type()))
     }
@@ -16,7 +16,7 @@ fn create_data_from_schema_recurse<'a>(schema: &'a RecordSchema, mut tuple: Tupl
 }
 
 
-fn create_data_from_column_type<'a>(col_type: &'a FieldType) -> ColumnData {
+fn create_data_from_column_type(col_type: &FieldType) -> ColumnData {
     match &col_type {
         FieldType::Float(def) => {
             ColumnData::Float(def.generate())

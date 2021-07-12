@@ -12,5 +12,5 @@ pub fn parse_args<'a>() -> ArgMatches<'a> {
                                 .help("Number of records to create")
                                 .takes_value(true))
                             .get_matches();
-    return matches;
+    matches
 }
