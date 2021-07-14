@@ -5,6 +5,7 @@ mod data_gen;
 mod writer;
 
 use schema::{FieldType, RecordSchema, FieldSchema};
+use std::fs::File;
 use data_gen::*;
 
 fn iterate_over_schema(schema: &RecordSchema, ) {
@@ -64,10 +65,18 @@ fn main() {
 
     println!("{:?}\n\n", schema);
 
-    for _ in 0..number_of_records {
+    let mut file = File::create("test_output.json").expect("Couldn't open file");
+    let file_writer = writer::FileWriter::new(writer::to_json_data);
+    println!("Writing out to file");
+    let mut next_print = 1;
+    for i in 0..number_of_records {
         let output_data = create_data_from_schema(&schema);
-        println!("Raw: {:?}", output_data);
-        println!("json: {}", writer::to_pretty_json_data(&output_data))
+        file_writer.write_to_file(&output_data, &mut file);
+        if next_print <= i + 1 {
+            println!("Wrote {} records to file", i+1);
+            next_print *= 10;
+        }
     }
-    
+
+    println!("{} records written to file", number_of_records);
 }
