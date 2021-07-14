@@ -1,9 +1,14 @@
+#[macro_use] extern crate log;
+extern crate env_logger;
+
 mod args;
 mod schema;
 mod data_repr;
 mod data_gen;
 mod writer;
 
+use env_logger::Env;
+use log::{info, error, trace, warn, Level};
 use schema::{FieldType, RecordSchema, FieldSchema};
 use std::fs::File;
 use data_gen::*;
@@ -17,16 +22,19 @@ fn iterate_over_schema_internal(schema: &RecordSchema, indent: &str) {
     for (i, col_schema) in schema.iter().enumerate() {
         match col_schema.get_type() {
             FieldType::Record(rs) => {
-                println!("{}{}: ColumnSchema {{ name: \"{}\", col_type: \"Record\" }}", indent, i, col_schema.get_name());
+                info!("{}{}: ColumnSchema {{ name: \"{}\", col_type: \"Record\" }}", indent, i, col_schema.get_name());
                 iterate_over_schema_internal(rs, [indent, "  "].join("").as_str())
             },
-            _ => println!("{}{}: {:?}", indent, i, col_schema),
+            _ => info!("{}{}: {:?}", indent, i, col_schema),
         };
     }
 }
 
 
 fn main() {
+    // Init logger
+    env_logger::init_from_env(Env::default().default_filter_or("info"));
+
     let matches = args::parse_args();
     let number_of_records =
         if let Some(nr) = matches.value_of(args::RECORDS_TO_CREATE) {
@@ -60,23 +68,22 @@ fn main() {
         ))
     ;
 
-    println!("Iterating");
     iterate_over_schema(&schema);
 
-    println!("{:?}\n\n", schema);
+    info!("{:?}\n\n", schema);
 
     let mut file = File::create("test_output.json").expect("Couldn't open file");
     let file_writer = writer::FileWriter::new(writer::to_json_data);
-    println!("Writing out to file");
+    info!("Writing out to file");
     let mut next_print = 1;
     for i in 0..number_of_records {
         let output_data = create_data_from_schema(&schema);
         file_writer.write_to_file(&output_data, &mut file);
         if next_print <= i + 1 {
-            println!("Wrote {} records to file", i+1);
+            info!("Wrote {} records to file", i+1);
             next_print *= 10;
         }
     }
 
-    println!("{} records written to file", number_of_records);
+    info!("{} records written to file", number_of_records);
 }
