@@ -5,10 +5,16 @@ use crate::data_repr::*;
 use crate::data_repr::ColumnData;
 use super::*;
 
-pub struct TupleToJsonSerializer {}
+pub struct TupleToJsonSerializer {
+    pretty_print: bool,
+}
 
 impl TupleToJsonSerializer {
-    pub fn new() -> Self { TupleToJsonSerializer {} }
+    pub fn new(pretty_print: bool) -> Self {
+        TupleToJsonSerializer {
+            pretty_print,
+        }
+    }
 
     pub fn to_pretty_json_data(&self, tuple: &Tuple) -> String {
         let output_value = self.to_json_data_recurse(tuple);
@@ -50,7 +56,10 @@ impl TupleSerializer for TupleToJsonSerializer {
 
 impl TupleToString for TupleToJsonSerializer {
     fn tuple_to_string(&self, tuple: &Tuple) -> String {
-        let output_value = self.to_json_data_recurse(tuple);
-        output_value.to_string()
+        if self.pretty_print {
+            self.to_pretty_json_data(tuple)
+        } else {
+            self.to_json_data_recurse(tuple).to_string()
+        }
     }
 }

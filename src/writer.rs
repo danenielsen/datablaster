@@ -14,7 +14,7 @@ impl<T> FileWriter<T> where T: TupleSerializer + TupleToString {
         FileWriter { serializer }
     }
 
-    pub fn write_to_file<'a, 'b>(&self, t: &'a Tuple, file: &'b mut File)
+    pub fn write_to_file(&self, t: &Tuple, file: &mut File)
     {
         let mut line = self.serializer.tuple_to_string(t);
         if line.chars().last().expect("Serialized data is empty") != '\n' {

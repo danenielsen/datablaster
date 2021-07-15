@@ -73,7 +73,7 @@ fn main() {
     info!("{:?}\n\n", schema);
 
     let mut file = File::create(output_file).expect("Couldn't open file");
-    let file_writer = writer::FileWriter::new(TupleToJsonSerializer::new());
+    let file_writer = writer::FileWriter::new(TupleToJsonSerializer::new(false));
     info!("Writing out to file");
     let mut next_print = 1;
     for i in 0..number_of_records {
