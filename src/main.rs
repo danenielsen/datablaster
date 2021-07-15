@@ -1,6 +1,3 @@
-#[macro_use] extern crate log;
-extern crate env_logger;
-
 mod args;
 mod schema;
 mod data_repr;
@@ -8,7 +5,7 @@ mod data_gen;
 mod writer;
 
 use env_logger::Env;
-use log::{info, error, trace, warn, Level};
+use log::{info, error, trace, warn};
 use schema::{FieldType, RecordSchema, FieldSchema};
 use std::fs::File;
 use data_gen::*;
@@ -18,7 +15,7 @@ fn iterate_over_schema(schema: &RecordSchema, ) {
 }
 
 
-fn iterate_over_schema_internal(schema: &RecordSchema, indent: &str) {
+pub fn iterate_over_schema_internal(schema: &RecordSchema, indent: &str) {
     for (i, col_schema) in schema.iter().enumerate() {
         match col_schema.get_type() {
             FieldType::Record(rs) => {
