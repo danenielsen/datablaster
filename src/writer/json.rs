@@ -1,0 +1,56 @@
+extern crate serde_json;
+
+use serde_json::{Map, Value, json, to_string_pretty};
+use crate::data_repr::*;
+use crate::data_repr::ColumnData;
+use super::*;
+
+pub struct TupleToJsonSerializer {}
+
+impl TupleToJsonSerializer {
+    pub fn new() -> Self { TupleToJsonSerializer {} }
+
+    pub fn to_pretty_json_data(&self, tuple: &Tuple) -> String {
+        let output_value = self.to_json_data_recurse(tuple);
+        match to_string_pretty(&output_value) {
+            Err(e) => panic!("Error converting to pretty print json: {}", e),
+            Ok(s) => s,
+        }
+    }
+    
+    fn to_json_data_recurse(&self, tuple: &Tuple) -> Value {
+        let mut json_map = Map::new();
+        for (field_name, field_value) in tuple {
+            json_map.insert(field_name.to_string(), self.column_data_to_json_value(field_value));
+        }
+        json!(json_map)
+    }
+    
+    fn column_data_to_json_value(&self, col_data: &ColumnData) -> Value {
+        match col_data {
+            ColumnData::Integer(v) => json!(v),
+            ColumnData::Float(v) => json!(v),
+            ColumnData::String(v) => json!(v),
+            ColumnData::Record(t) => self.to_json_data_recurse(t),
+            ColumnData::List(v) => {
+                let mut list = Vec::new();
+                for cd in v {
+                    list.push(self.column_data_to_json_value(cd))
+                }
+                json!(list)
+            },
+        }
+    }
+}
+
+impl TupleSerializer for TupleToJsonSerializer {
+    fn supports_list(&self) -> bool { true }
+    fn supports_record(&self) -> bool { true }
+}
+
+impl TupleToString for TupleToJsonSerializer {
+    fn tuple_to_string(&self, tuple: &Tuple) -> String {
+        let output_value = self.to_json_data_recurse(tuple);
+        output_value.to_string()
+    }
+}

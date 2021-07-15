@@ -1,23 +1,22 @@
-extern crate serde_json;
+pub mod json;
 
 use std::fs::File;
 use std::io::prelude::*;
-use serde_json::{Map, Value, json, to_string_pretty};
 use crate::data_repr::*;
-use crate::data_repr::ColumnData;
 
-pub struct FileWriter {
-    serializer: fn(&Tuple) -> String,
+pub struct FileWriter<T>
+    where T: TupleSerializer + TupleToString {
+    serializer: T,
 }
 
-impl FileWriter {
-    pub fn new(serializer: fn(&Tuple) -> String) -> Self {
+impl<T> FileWriter<T> where T: TupleSerializer + TupleToString {
+    pub fn new(serializer: T) -> Self {
         FileWriter { serializer }
     }
 
     pub fn write_to_file<'a, 'b>(&self, t: &'a Tuple, file: &'b mut File)
     {
-        let mut line = (self.serializer)(t);
+        let mut line = self.serializer.tuple_to_string(t);
         if line.chars().last().expect("Serialized data is empty") != '\n' {
             line.push('\n')
         }
@@ -25,43 +24,23 @@ impl FileWriter {
     }
 }
 
-pub fn to_json_data(tuple: &Tuple) -> String {
-    let output_value = to_json_data_recurse(tuple);
-    output_value.to_string()
+pub trait TupleSerializer {
+    fn supports_list(&self) -> bool { false }
+    fn supports_record(&self) -> bool { false }
 }
 
-pub fn to_pretty_json_data(tuple: &Tuple) -> String {
-    let output_value = to_json_data_recurse(tuple);
-    match to_string_pretty(&output_value) {
-        Err(e) => panic!("Error converting to pretty print json: {}", e),
-        Ok(s) => s,
-    }
+pub trait TupleToString {
+    fn tuple_to_string(&self, tuple: &Tuple) -> String;
 }
 
-fn to_json_data_recurse(tuple: &Tuple) -> Value {
-    let mut json_map = Map::new();
-    for (field_name, field_value) in tuple {
-        json_map.insert(field_name.to_string(), column_data_to_json_value(field_value));
-    }
-    json!(json_map)
+pub trait TupleToBytes {
+    fn tuple_to_bytes(&self, tuple: &Tuple) -> Vec<u8>;
 }
 
-fn column_data_to_json_value(col_data: &ColumnData) -> Value {
-    match col_data {
-        ColumnData::Integer(v) => json!(v),
-        ColumnData::Float(v) => json!(v),
-        ColumnData::String(v) => json!(v),
-        ColumnData::Record(t) => to_json_data_recurse(t),
-        ColumnData::List(v) => {
-            let mut list = Vec::new();
-            for cd in v {
-                list.push(column_data_to_json_value(cd))
-            }
-            json!(list)
-        },
-    }
-}
 
-fn write_data_as_csv() {
+
+
+
+fn write_data_as_csv() -> () {
     
 }

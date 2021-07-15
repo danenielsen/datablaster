@@ -5,10 +5,12 @@ mod data_gen;
 mod writer;
 
 use env_logger::Env;
+#[allow(unused_imports)]
 use log::{info, error, trace, warn};
 use schema::{FieldType, RecordSchema, FieldSchema};
 use std::fs::File;
 use data_gen::*;
+use writer::json::TupleToJsonSerializer;
 
 fn iterate_over_schema(schema: &RecordSchema, ) {
     iterate_over_schema_internal(schema, "")
@@ -33,6 +35,7 @@ fn main() {
     env_logger::init_from_env(Env::default().default_filter_or("info"));
 
     let matches = args::parse_args();
+    let output_file = matches.value_of(args::OUTPUT_FILE).unwrap();
     let number_of_records =
         if let Some(nr) = matches.value_of(args::RECORDS_TO_CREATE) {
             nr.parse::<i64>().unwrap_or(10)
@@ -69,8 +72,8 @@ fn main() {
 
     info!("{:?}\n\n", schema);
 
-    let mut file = File::create("test_output.json").expect("Couldn't open file");
-    let file_writer = writer::FileWriter::new(writer::to_json_data);
+    let mut file = File::create(output_file).expect("Couldn't open file");
+    let file_writer = writer::FileWriter::new(TupleToJsonSerializer::new());
     info!("Writing out to file");
     let mut next_print = 1;
     for i in 0..number_of_records {
