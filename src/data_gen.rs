@@ -1,4 +1,4 @@
-use crate::schema::{FieldType, RecordSchema};
+use super::definition::schema::{FieldType, RecordSchema};
 use crate::data_repr::{ColumnData, Tuple};
 
 

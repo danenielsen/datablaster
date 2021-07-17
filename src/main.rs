@@ -1,5 +1,5 @@
 mod args;
-mod schema;
+mod definition;
 mod data_repr;
 mod data_gen;
 mod writer;
@@ -7,7 +7,8 @@ mod writer;
 use env_logger::Env;
 #[allow(unused_imports)]
 use log::{info, error, trace, warn};
-use schema::{FieldType, RecordSchema, FieldSchema, DataFunctionGenerator, FieldDefinition};
+use definition::schema::{FieldType, RecordSchema, FieldSchema, FieldDefinition};
+use definition::gen::DataFunctionGenerator;
 use std::fs::File;
 use data_gen::*;
 use writer::json::TupleToJsonSerializer;
@@ -72,10 +73,10 @@ fn main() {
     */
 
     let schema = RecordSchema::new()
-        .with_column(FieldSchema::new("id", FieldType::Integer(Default::default())))
-        .with_column(FieldSchema::new("fname", FieldType::String(FieldDefinition::new(Box::new(DataFunctionGenerator::new(|| "fname".to_string()))))))
-        .with_column(FieldSchema::new("lname", FieldType::String(FieldDefinition::new(Box::new(DataFunctionGenerator::new(|| "lname".to_string()))))))
-        .with_column(FieldSchema::new("salary", FieldType::Integer(Default::default())))
+        .with_field(FieldSchema::new("id", FieldType::Integer(Default::default())))
+        .with_field(FieldSchema::new("fname", FieldType::String(FieldDefinition::new(Box::new(DataFunctionGenerator::new(|| "fname".to_string()))))))
+        .with_field(FieldSchema::new("lname", FieldType::String(FieldDefinition::new(Box::new(DataFunctionGenerator::new(|| "lname".to_string()))))))
+        .with_field(FieldSchema::new("salary", FieldType::Integer(Default::default())))
     ;
 
     iterate_over_schema(&schema);
