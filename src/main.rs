@@ -11,6 +11,7 @@ use schema::{FieldType, RecordSchema, FieldSchema};
 use std::fs::File;
 use data_gen::*;
 use writer::json::TupleToJsonSerializer;
+use writer::csv::TupleToCSVSerializer;
 
 fn iterate_over_schema(schema: &RecordSchema, ) {
     iterate_over_schema_internal(schema, "")
@@ -43,6 +44,7 @@ fn main() {
             10
         };
 
+    /*
     let schema = RecordSchema::new()
         .with_column(FieldSchema::new("total", FieldType::Float(Default::default())))
         .with_column(FieldSchema::new("transaction_id", FieldType::Integer(Default::default())))
@@ -67,13 +69,21 @@ fn main() {
             )
         ))
     ;
+    */
+
+    let schema = RecordSchema::new()
+        .with_column(FieldSchema::new("id", FieldType::Integer(Default::default())))
+        .with_column(FieldSchema::new("fname", FieldType::String(Default::default())))
+        .with_column(FieldSchema::new("lname", FieldType::String(Default::default())))
+        .with_column(FieldSchema::new("salary", FieldType::Integer(Default::default())))
+    ;
 
     iterate_over_schema(&schema);
 
     info!("{:?}\n\n", schema);
 
     let mut file = File::create(output_file).expect("Couldn't open file");
-    let file_writer = writer::FileWriter::new(TupleToJsonSerializer::new(false));
+    let file_writer = writer::FileWriter::new(TupleToCSVSerializer::new());
     info!("Writing out to file");
     let mut next_print = 1;
     for i in 0..number_of_records {

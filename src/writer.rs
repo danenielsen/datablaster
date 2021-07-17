@@ -1,4 +1,5 @@
 pub mod json;
+pub mod csv;
 
 use std::fs::File;
 use std::io::prelude::*;
@@ -35,12 +36,4 @@ pub trait TupleToString {
 
 pub trait TupleToBytes {
     fn tuple_to_bytes(&self, tuple: &Tuple) -> Vec<u8>;
-}
-
-
-
-
-
-fn write_data_as_csv() -> () {
-    
 }
