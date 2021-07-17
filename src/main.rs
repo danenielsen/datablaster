@@ -7,7 +7,7 @@ mod writer;
 use env_logger::Env;
 #[allow(unused_imports)]
 use log::{info, error, trace, warn};
-use schema::{FieldType, RecordSchema, FieldSchema};
+use schema::{FieldType, RecordSchema, FieldSchema, DataFunctionGenerator, FieldDefinition};
 use std::fs::File;
 use data_gen::*;
 use writer::json::TupleToJsonSerializer;
@@ -73,8 +73,8 @@ fn main() {
 
     let schema = RecordSchema::new()
         .with_column(FieldSchema::new("id", FieldType::Integer(Default::default())))
-        .with_column(FieldSchema::new("fname", FieldType::String(Default::default())))
-        .with_column(FieldSchema::new("lname", FieldType::String(Default::default())))
+        .with_column(FieldSchema::new("fname", FieldType::String(FieldDefinition::new(Box::new(DataFunctionGenerator::new(|| "fname".to_string()))))))
+        .with_column(FieldSchema::new("lname", FieldType::String(FieldDefinition::new(Box::new(DataFunctionGenerator::new(|| "lname".to_string()))))))
         .with_column(FieldSchema::new("salary", FieldType::Integer(Default::default())))
     ;
 
