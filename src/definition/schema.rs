@@ -51,6 +51,7 @@ impl<T: DefaultGenerator> Default for FieldDefinition<T> {
     }
 }
 
+
 /**
  * FieldType
  */
@@ -69,22 +70,22 @@ pub enum FieldType {
  */
 #[derive(Debug, Clone)]
 pub struct RecordSchema {
-    column_list: Vec<FieldSchema>,
+    field_list: Vec<FieldSchema>,
 }
 
 impl RecordSchema {
     pub fn new() -> Self {
         RecordSchema {
-            column_list: Vec::new(),
+            field_list: Vec::new(),
         }
     }
     
     pub fn iter(&self) -> impl Iterator<Item = &FieldSchema> {
-        self.column_list.iter()
+        self.field_list.iter()
     }
 
     pub fn add_field(&mut self, column: FieldSchema) {
-        self.column_list.push(column);
+        self.field_list.push(column);
     }
 
     pub fn with_field(mut self, column: FieldSchema) -> Self {
@@ -97,6 +98,6 @@ impl IntoIterator for RecordSchema {
     type Item = FieldSchema;
     type IntoIter = std::vec::IntoIter<FieldSchema>;
     fn into_iter(self) -> Self::IntoIter {
-        self.column_list.into_iter()
+        self.field_list.into_iter()
     }
 }
