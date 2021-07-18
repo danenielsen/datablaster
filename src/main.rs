@@ -3,7 +3,10 @@ mod definition;
 mod data_repr;
 mod data_gen;
 mod writer;
+mod parser;
 
+use std::fs;
+use std::str;
 use env_logger::Env;
 #[allow(unused_imports)]
 use log::{info, error, trace, warn};
@@ -14,6 +17,8 @@ use data_gen::*;
 use writer::*;
 use writer::json::TupleToJsonSerializer;
 use writer::csv::TupleToCSVSerializer;
+use parser::*;
+use nom::Finish;
 
 fn iterate_over_schema(schema: &RecordSchema, ) {
     iterate_over_schema_internal(schema, "")
@@ -40,12 +45,21 @@ fn main() {
     let matches = args::parse_args();
     let output_file_format = matches.value_of(args::FORMAT).unwrap(); //required
     let output_file = matches.value_of(args::OUTPUT_FILE).unwrap(); //required
-    let number_of_records =
-        if let Some(nr) = matches.value_of(args::RECORDS_TO_CREATE) {
-            nr.parse::<i64>().unwrap_or(10)
-        } else {
-            10
-        };
+    let schema_file = matches.value_of(args::SCHEMA).unwrap(); //required
+    let number_of_records = if let Some(nr) = matches.value_of(args::RECORDS_TO_CREATE) {
+        nr.parse::<i64>().unwrap_or(10)
+    } else {
+        10
+    };
+
+    let schema_file_string = fs::read_to_string(schema_file).unwrap();
+    let parse_result = parser(&schema_file_string);
+    
+    match parse_result.finish() {
+        Ok(k) => (),
+        Err(e) => error!("\nParse Error: {:?}\non input: ```{}```", e.code, e.input),
+    }
+    return;
 
     let schema = RecordSchema::new()
         .with_field(FieldSchema::new("total", FieldType::Float(Default::default())))
