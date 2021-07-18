@@ -11,6 +11,7 @@ use definition::schema::{FieldType, RecordSchema, FieldSchema, FieldDefinition};
 use definition::gen::DataFunctionGenerator;
 use std::fs::File;
 use data_gen::*;
+use writer::*;
 use writer::json::TupleToJsonSerializer;
 use writer::csv::TupleToCSVSerializer;
 
@@ -45,28 +46,28 @@ fn main() {
             10
         };
 
-    /*
+        /*
     let schema = RecordSchema::new()
-        .with_column(FieldSchema::new("total", FieldType::Float(Default::default())))
-        .with_column(FieldSchema::new("transaction_id", FieldType::Integer(Default::default())))
-        .with_column(FieldSchema::new("line_items", FieldType::List(Box::new(FieldType::Record(
+        .with_field(FieldSchema::new("total", FieldType::Float(Default::default())))
+        .with_field(FieldSchema::new("transaction_id", FieldType::Integer(Default::default())))
+        .with_field(FieldSchema::new("line_items", FieldType::List(Box::new(FieldType::Record(
             RecordSchema::new()
-                .with_column(FieldSchema::new("item", FieldType::String(Default::default())))
-                .with_column(FieldSchema::new("sub_items", FieldType::Record(
+                .with_field(FieldSchema::new("item", FieldType::String(Default::default())))
+                .with_field(FieldSchema::new("sub_items", FieldType::Record(
                     RecordSchema::new()
-                        .with_column(FieldSchema::new("name", FieldType::String(Default::default())))
-                        .with_column(FieldSchema::new("amount", FieldType::Integer(Default::default())))
-                        .with_column(FieldSchema::new("cost", FieldType::Float(Default::default())))
+                        .with_field(FieldSchema::new("name", FieldType::String(Default::default())))
+                        .with_field(FieldSchema::new("amount", FieldType::Integer(Default::default())))
+                        .with_field(FieldSchema::new("cost", FieldType::Float(Default::default())))
                 )))
-                .with_column(FieldSchema::new("amount", FieldType::Integer(Default::default())))
-                .with_column(FieldSchema::new("cost", FieldType::Float(Default::default())))
+                .with_field(FieldSchema::new("amount", FieldType::Integer(Default::default())))
+                .with_field(FieldSchema::new("cost", FieldType::Float(Default::default())))
         )))))
-        .with_column(FieldSchema::new("sales_agents", FieldType::List(Box::new(FieldType::String(Default::default())))))
-        .with_column(FieldSchema::new("team", FieldType::Record(
+        .with_field(FieldSchema::new("sales_agents", FieldType::List(Box::new(FieldType::String(Default::default())))))
+        .with_field(FieldSchema::new("team", FieldType::Record(
             RecordSchema::new()
-                .with_column(FieldSchema::new("project_manager", FieldType::String(Default::default())))
-                .with_column(FieldSchema::new("team_members", FieldType::List(Box::new(FieldType::String(Default::default())))))
-                .with_column(FieldSchema::new("budget", FieldType::Float(Default::default())))
+                .with_field(FieldSchema::new("project_manager", FieldType::String(Default::default())))
+                .with_field(FieldSchema::new("team_members", FieldType::List(Box::new(FieldType::String(Default::default())))))
+                .with_field(FieldSchema::new("budget", FieldType::Float(Default::default())))
             )
         ))
     ;
@@ -84,7 +85,16 @@ fn main() {
     info!("{:?}\n\n", schema);
 
     let mut file = File::create(output_file).expect("Couldn't open file");
-    let file_writer = writer::FileWriter::new(TupleToCSVSerializer::new());
+
+    let tuple_serializer = TupleToCSVSerializer::new();
+    if schema.contains_record() && !tuple_serializer.supports_record() {
+        panic!("Records not supported")
+    }
+    if schema.contains_list() && !tuple_serializer.supports_list() {
+        panic!("Lists not supported")
+    }
+
+    let file_writer = writer::FileWriter::new(tuple_serializer);
     info!("Writing out to file");
     let mut next_print = 1;
     for i in 0..number_of_records {

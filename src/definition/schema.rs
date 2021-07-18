@@ -71,12 +71,16 @@ pub enum FieldType {
 #[derive(Debug, Clone)]
 pub struct RecordSchema {
     field_list: Vec<FieldSchema>,
+    contains_record: bool,
+    contains_list: bool,
 }
 
 impl RecordSchema {
     pub fn new() -> Self {
         RecordSchema {
             field_list: Vec::new(),
+            contains_record: false,
+            contains_list: false,
         }
     }
     
@@ -85,12 +89,39 @@ impl RecordSchema {
     }
 
     pub fn add_field(&mut self, column: FieldSchema) {
+        match &column.field_type {
+            FieldType::Record(r) => {
+                self.contains_record = true;
+                // If the record contains a list, also set list
+                if r.contains_list() {
+                    self.contains_list = true;
+                }
+            }
+            FieldType::List(t) => {
+                self.contains_list = true;
+                match &**t {
+                    // If the list holds records also set record.
+                    // We don't need to go deeper because the given Record should already be set correctly
+                    FieldType::Record(_) => self.contains_record = true,
+                    _ => ()
+                }
+            }
+            _ => (),
+        }
         self.field_list.push(column);
     }
 
     pub fn with_field(mut self, column: FieldSchema) -> Self {
         self.add_field(column);
         self
+    }
+
+    pub fn contains_record(&self) -> bool {
+        self.contains_record
+    }
+
+    pub fn contains_list(&self) -> bool {
+        self.contains_list
     }
 }
 
