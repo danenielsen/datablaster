@@ -38,7 +38,8 @@ fn main() {
     env_logger::init_from_env(Env::default().default_filter_or("info"));
 
     let matches = args::parse_args();
-    let output_file = matches.value_of(args::OUTPUT_FILE).unwrap();
+    let output_file_format = matches.value_of(args::FORMAT).unwrap(); //required
+    let output_file = matches.value_of(args::OUTPUT_FILE).unwrap(); //required
     let number_of_records =
         if let Some(nr) = matches.value_of(args::RECORDS_TO_CREATE) {
             nr.parse::<i64>().unwrap_or(10)
@@ -46,7 +47,6 @@ fn main() {
             10
         };
 
-        /*
     let schema = RecordSchema::new()
         .with_field(FieldSchema::new("total", FieldType::Float(Default::default())))
         .with_field(FieldSchema::new("transaction_id", FieldType::Integer(Default::default())))
@@ -71,30 +71,30 @@ fn main() {
             )
         ))
     ;
-    */
 
+    /*
     let schema = RecordSchema::new()
         .with_field(FieldSchema::new("id", FieldType::Integer(Default::default())))
         .with_field(FieldSchema::new("fname", FieldType::String(FieldDefinition::new(Box::new(DataFunctionGenerator::new(|| "fname".to_string()))))))
         .with_field(FieldSchema::new("lname", FieldType::String(FieldDefinition::new(Box::new(DataFunctionGenerator::new(|| "lname".to_string()))))))
         .with_field(FieldSchema::new("salary", FieldType::Integer(Default::default())))
     ;
+    */
 
-    iterate_over_schema(&schema);
-
-    info!("{:?}\n\n", schema);
-
-    let mut file = File::create(output_file).expect("Couldn't open file");
-
-    let tuple_serializer = TupleToCSVSerializer::new();
+    let tuple_serializer: Box<dyn TupleSerializer> = match output_file_format {
+        "csv" => Box::new(TupleToCSVSerializer::new()),
+        "json" => Box::new(TupleToJsonSerializer::new(false)),
+        _ => panic!("Unknown output format: {}", output_file_format),
+    };
     if schema.contains_record() && !tuple_serializer.supports_record() {
         panic!("Records not supported")
     }
     if schema.contains_list() && !tuple_serializer.supports_list() {
         panic!("Lists not supported")
     }
-
     let file_writer = writer::FileWriter::new(tuple_serializer);
+    
+    let mut file = File::create(output_file).expect("Couldn't open file");
     info!("Writing out to file");
     let mut next_print = 1;
     for i in 0..number_of_records {

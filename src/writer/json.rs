@@ -52,9 +52,7 @@ impl TupleToJsonSerializer {
 impl TupleSerializer for TupleToJsonSerializer {
     fn supports_list(&self) -> bool { true }
     fn supports_record(&self) -> bool { true }
-}
 
-impl TupleToString for TupleToJsonSerializer {
     fn tuple_to_string(&self, tuple: &Tuple) -> String {
         if self.pretty_print {
             self.to_pretty_json_data(tuple)

@@ -5,13 +5,12 @@ use std::fs::File;
 use std::io::prelude::*;
 use crate::data_repr::*;
 
-pub struct FileWriter<T>
-    where T: TupleSerializer + TupleToString {
-    serializer: T,
+pub struct FileWriter {
+    serializer: Box<dyn TupleSerializer>,
 }
 
-impl<T> FileWriter<T> where T: TupleSerializer + TupleToString {
-    pub fn new(serializer: T) -> Self {
+impl FileWriter {
+    pub fn new(serializer: Box<dyn TupleSerializer>) -> Self {
         FileWriter { serializer }
     }
 
@@ -28,9 +27,6 @@ impl<T> FileWriter<T> where T: TupleSerializer + TupleToString {
 pub trait TupleSerializer {
     fn supports_list(&self) -> bool { false }
     fn supports_record(&self) -> bool { false }
-}
-
-pub trait TupleToString {
     fn tuple_to_string(&self, tuple: &Tuple) -> String;
 }
 

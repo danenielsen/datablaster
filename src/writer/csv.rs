@@ -14,9 +14,7 @@ impl TupleToCSVSerializer {
 impl TupleSerializer for TupleToCSVSerializer {
     fn supports_list(&self) -> bool { false }
     fn supports_record(&self) -> bool { false }
-}
 
-impl TupleToString for TupleToCSVSerializer {
     fn tuple_to_string(&self, tuple: &Tuple) -> String {
         let mut row: Vec<String> = vec![];
         for (_, data) in tuple {
