@@ -9,7 +9,7 @@ use std::fs;
 use std::str;
 use env_logger::Env;
 #[allow(unused_imports)]
-use log::{info, error, trace, warn};
+use log::{info, error, debug, trace, warn};
 use definition::schema::{FieldType, RecordSchema, FieldSchema, FieldDefinition};
 use definition::gen::DataFunctionGenerator;
 use std::fs::File;
@@ -39,9 +39,6 @@ pub fn iterate_over_schema_internal(schema: &RecordSchema, indent: &str) {
 
 
 fn main() {
-    // Init logger
-    env_logger::init_from_env(Env::default().default_filter_or("info"));
-
     let matches = args::parse_args();
     let output_file_format = matches.value_of(args::FORMAT).unwrap(); //required
     let output_file = matches.value_of(args::OUTPUT_FILE).unwrap(); //required
@@ -51,6 +48,17 @@ fn main() {
     } else {
         10
     };
+
+    // Init logger
+    let log_level = match matches.occurrences_of(args::VERBOSE) {
+        0 => "info",
+        1 => "debug",
+        _ => "trace",
+    };
+    env_logger::init_from_env(Env::default().default_filter_or(log_level));
+    info!("info");
+    debug!("debug");
+    trace!("trace");
 
     let schema_file_string = fs::read_to_string(schema_file).unwrap();
     let parse_result = parser(&schema_file_string);

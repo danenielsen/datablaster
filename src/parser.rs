@@ -6,27 +6,29 @@ use nom::{
     sequence::{preceded, delimited, tuple},
     combinator::{map_res, eof, iterator},
     multi::{many1},
+    error::{Error, ErrorKind, ParseError},
+    Err,
   };
-use log::{info, error};
+use log::{info, debug, error};
 use std::str;
 
 const LOG_SEPERATOR: &str = "<========================>";
 
-pub fn print_parse_result(res: &IResult<&[u8], &[u8]>) {
-    match res {
-        Ok((input, matched)) => print_parse_pieces(input, matched),
-        Err(e) => error!("{}\nParsing Error: {}", LOG_SEPERATOR, e),
-    }
-}
 
-pub fn peek_parsed<'a>(res: IResult<&'a [u8], &'a [u8]>) -> IResult<&'a [u8], &'a [u8]> {
-    print_parse_result(&res);
+pub fn peek_parsed<'a>(res: IResult<&'a str, &'a str>) -> IResult<&'a str, &'a str> {
+    debug!("{}", parse_result_to_string(&res));
     res
 }
 
+pub fn parse_result_to_string(res: &IResult<&str, &str>) -> String {
+    match res {
+        Ok((input, matched)) => parse_pieces_to_string(input, matched),
+        Err(e) => format!("{}\nParsing Error: {}", LOG_SEPERATOR, e),
+    }
+}
 
-pub fn print_parse_pieces(input: &[u8], matched: &[u8]) {
-    info!("{}\nmatched: '{}'\nremaining: ```{}```", LOG_SEPERATOR, str::from_utf8(matched).unwrap(), str::from_utf8(input).unwrap());
+pub fn parse_pieces_to_string(input: &str, matched: &str) -> String {
+    format!("{}\nmatched: ```{}```\nremaining: ```{}```", LOG_SEPERATOR, matched, input)
 }
 
 fn obj_declaration(input: &str) -> IResult<&str, &str> {
@@ -42,15 +44,37 @@ fn field_def(input: &str) -> IResult<&str, &str> {
     preceded(multispace1, token_named)(input)
 }
 
-/*
-fn take_till_closing_delimited(opening_delim: char, closing_delim: char) -> impl FnMut(&str) -> IResult<&str, &str> {
-    unimplemented!()
+
+fn take_till_delimiter_closed(opening_delim: char, closing_delim: char) -> impl FnMut(&str) -> IResult<&str, &str> {
+    move |input| {
+        let mut delim_count = 0;
+        let mut ending_index = 0;
+        for (i, c) in input.chars().enumerate() {
+            ending_index = i;
+            match c {
+                c if c == closing_delim => if delim_count == 0 {
+                    break;
+                } else {
+                    delim_count += 1;
+                },
+                c if c == opening_delim => delim_count -= 1,
+                _ => (),
+            }
+        }
+        if delim_count != 0 {
+            Err(Err::Error(Error::from_error_kind(input, ErrorKind::TakeUntil)))
+        } else {
+            Ok((&input[ending_index..], &input[..ending_index]))
+        }
+    }
 }
-*/
 
 pub fn parser(input: &str) -> IResult<&str, &str> {
     let (input, declaration_type) = preceded(multispace0, obj_declaration)(input)?;
+    debug!("DECLARATION_TYPE: {}", declaration_type);
     let (input, table_name) = preceded(multispace1, token_named)(input)?;
-    let (input, matched) = delimited(preceded(multispace0, tag("(")), many1(is_not(")")), preceded(multispace0, tag(")")))(input)?;
-    eof(input)
+    debug!("TABLE_NAME: {}", table_name);
+    let (input, matched) = peek_parsed(delimited(preceded(multispace0, tag("(")), take_till_delimiter_closed('(', ')'), preceded(multispace0, tag(")")))(input))?;
+    let (input, _) = preceded(multispace0, tag(";"))(input)?;
+    preceded(multispace0, eof)(input)
 }

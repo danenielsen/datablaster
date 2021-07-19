@@ -1,5 +1,3 @@
-use std::collections::HashMap;
-
 // Data Repr
 #[derive(Debug, Clone)]
 pub enum ColumnData {

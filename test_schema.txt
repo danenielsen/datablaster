@@ -1,8 +1,7 @@
 table TABLENAME (
 	COLUMN_NAME type,
 	COLUMN_NAME list(type),
-
-);
 	COLUMN_NAME record(
 		COLUMN_NAME type,
 	),
+);
