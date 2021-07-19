@@ -1,4 +1,4 @@
-table TABLENAME (
+table Employees (
 	name STRING,
 	age INTEGER,
     salary FLOAT,

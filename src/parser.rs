@@ -1,4 +1,5 @@
-
+use crate::definition::schema::{FieldType, FieldDefinition, FieldSchema};
+use std::fmt::Debug;
 use nom::{
     IResult,
     bytes::complete::{tag, is_not, take_while_m_n, take_while1},
@@ -15,20 +16,20 @@ use std::str;
 const LOG_SEPERATOR: &str = "<========================>";
 
 
-pub fn peek_parsed<'a>(res: IResult<&'a str, &'a str>) -> IResult<&'a str, &'a str> {
-    debug!("{}", parse_result_to_string(&res));
+pub fn peek_parsed<'a, T: Debug + Sized>(res: IResult<&'a str, T>) -> IResult<&'a str, T> {
+    trace!("{}", parse_result_to_string(&res));
     res
 }
 
-pub fn parse_result_to_string(res: &IResult<&str, &str>) -> String {
+pub fn parse_result_to_string<T: Debug + Sized>(res: &IResult<&str, T>) -> String {
     match res {
         Ok((input, matched)) => parse_pieces_to_string(input, matched),
         Err(e) => format!("{}\nParsing Error: {}\n{}", LOG_SEPERATOR, e, LOG_SEPERATOR),
     }
 }
 
-pub fn parse_pieces_to_string(input: &str, matched: &str) -> String {
-    format!("\n{}\nmatched: ```{}```\nremaining: ```{}```\n{}", LOG_SEPERATOR, matched, input, LOG_SEPERATOR)
+pub fn parse_pieces_to_string<T: Debug + Sized>(input: &str, matched: T) -> String {
+    format!("\n{}\nmatched: ```{:?}```\nremaining: ```{}```\n{}", LOG_SEPERATOR, matched, input, LOG_SEPERATOR)
 }
 
 fn obj_declaration(input: &str) -> IResult<&str, &str> {
@@ -38,13 +39,29 @@ fn obj_declaration(input: &str) -> IResult<&str, &str> {
 
 fn token_named(input: &str) -> IResult<&str, &str> {
     trace!("token_named");
+    // A named token is alphanumeric and underscores only
     take_while1(|c: char| {c.is_alphanumeric() || c == '_'})(input)
 }
 
-fn field_def(input: &str) -> IResult<&str, &str> {
+fn field_def(input: &str) -> IResult<&str, FieldSchema> {
     trace!("field_def");
-    let (input, field_name) = peek_parsed(preceded(multispace0, token_named)(input))?;
-    peek_parsed(preceded(multispace1, token_named)(input))
+    // Get the field_name
+    let (i, field_name) = peek_parsed(preceded(multispace0, token_named)(input))?;
+    // Get the field_type
+    let (i, field_type) = peek_parsed(preceded(multispace1, field_type)(i))?;
+    Ok((i, FieldSchema::new(field_name, field_type)))
+}
+
+fn field_type(input: &str) -> IResult<&str, FieldType> {
+    trace!("field_type");
+    // Get type name and turn it into a FieldType
+    let (i, type_name) = peek_parsed(token_named(input))?;
+    match type_name {
+        f if f.to_lowercase() == "string" => Ok((i, FieldType::String(Default::default()))),
+        f if f.to_lowercase() == "integer" => Ok((i, FieldType::Integer(Default::default()))),
+        f if f.to_lowercase() == "float" => Ok((i, FieldType::Float(Default::default()))),
+        _ => Err(Err::Error(Error::from_error_kind(input, ErrorKind::TakeUntil))),
+    }
 }
 
 
@@ -80,7 +97,7 @@ pub fn parser(input: &str) -> IResult<&str, &str> {
     let (input, fields) = peek_parsed(delimited(preceded(multispace0, tag("(")), take_till_delimiter_closed('(', ')'), preceded(multispace0, tag(")")))(input))?;
     let mut it = iterator(fields, terminated(field_def, tag(",")));
     for f in &mut it {
-        debug!("{}", f);
+        debug!("{:?}", f);
     }
     debug!("{:?}", it.finish());
 
