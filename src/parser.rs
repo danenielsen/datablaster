@@ -3,13 +3,13 @@ use nom::{
     IResult,
     bytes::complete::{tag, is_not, take_while_m_n, take_while1},
     character::complete::{multispace0, multispace1},
-    sequence::{preceded, delimited, tuple},
+    sequence::{preceded, delimited, tuple, terminated},
     combinator::{map_res, eof, iterator},
     multi::{many1},
     error::{Error, ErrorKind, ParseError},
     Err,
   };
-use log::{info, debug, error};
+use log::{info, debug, error, trace};
 use std::str;
 
 const LOG_SEPERATOR: &str = "<========================>";
@@ -23,25 +23,28 @@ pub fn peek_parsed<'a>(res: IResult<&'a str, &'a str>) -> IResult<&'a str, &'a s
 pub fn parse_result_to_string(res: &IResult<&str, &str>) -> String {
     match res {
         Ok((input, matched)) => parse_pieces_to_string(input, matched),
-        Err(e) => format!("{}\nParsing Error: {}", LOG_SEPERATOR, e),
+        Err(e) => format!("{}\nParsing Error: {}\n{}", LOG_SEPERATOR, e, LOG_SEPERATOR),
     }
 }
 
 pub fn parse_pieces_to_string(input: &str, matched: &str) -> String {
-    format!("{}\nmatched: ```{}```\nremaining: ```{}```", LOG_SEPERATOR, matched, input)
+    format!("\n{}\nmatched: ```{}```\nremaining: ```{}```\n{}", LOG_SEPERATOR, matched, input, LOG_SEPERATOR)
 }
 
 fn obj_declaration(input: &str) -> IResult<&str, &str> {
+    trace!("obj_declaration");
     tag("table")(input)
 }
 
 fn token_named(input: &str) -> IResult<&str, &str> {
-    take_while1(char::is_alphanumeric)(input)
+    trace!("token_named");
+    take_while1(|c: char| {c.is_alphanumeric() || c == '_'})(input)
 }
 
 fn field_def(input: &str) -> IResult<&str, &str> {
-    let (input, field_name) = preceded(multispace0, token_named)(input)?;
-    preceded(multispace1, token_named)(input)
+    trace!("field_def");
+    let (input, field_name) = peek_parsed(preceded(multispace0, token_named)(input))?;
+    peek_parsed(preceded(multispace1, token_named)(input))
 }
 
 
@@ -74,7 +77,13 @@ pub fn parser(input: &str) -> IResult<&str, &str> {
     debug!("DECLARATION_TYPE: {}", declaration_type);
     let (input, table_name) = preceded(multispace1, token_named)(input)?;
     debug!("TABLE_NAME: {}", table_name);
-    let (input, matched) = peek_parsed(delimited(preceded(multispace0, tag("(")), take_till_delimiter_closed('(', ')'), preceded(multispace0, tag(")")))(input))?;
+    let (input, fields) = peek_parsed(delimited(preceded(multispace0, tag("(")), take_till_delimiter_closed('(', ')'), preceded(multispace0, tag(")")))(input))?;
+    let mut it = iterator(fields, terminated(field_def, tag(",")));
+    for f in &mut it {
+        debug!("{}", f);
+    }
+    debug!("{:?}", it.finish());
+
     let (input, _) = preceded(multispace0, tag(";"))(input)?;
     preceded(multispace0, eof)(input)
 }

@@ -1,7 +1,9 @@
 table TABLENAME (
-	COLUMN_NAME type,
-	COLUMN_NAME list(type),
-	COLUMN_NAME record(
-		COLUMN_NAME type,
+	name STRING,
+	age INTEGER,
+    salary FLOAT,
+	managers list(STRING),
+	facts record(
+		year_started INTEGER,
 	),
 );
