@@ -99,11 +99,11 @@ impl RecordSchema {
             }
             FieldType::List(t) => {
                 self.contains_list = true;
-                match &**t {
-                    // If the list holds records also set record.
-                    // We don't need to go deeper because the given Record should already be set correctly
-                    FieldType::Record(_) => self.contains_record = true,
-                    _ => ()
+
+                // If the list holds records also set record.
+                // We don't need to go deeper because the given Record should already be set correctly
+                if let FieldType::Record(_) = &**t {
+                    self.contains_record = true
                 }
             }
             _ => (),
