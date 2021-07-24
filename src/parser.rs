@@ -1,19 +1,19 @@
-use crate::definition::schema::{FieldType, FieldDefinition, FieldSchema};
+use crate::definition::schema::{FieldType, FieldSchema};
 use crate::definition::schema::RecordSchema;
-use std::fmt::Debug;
-use nom::{
-    IResult,
-    bytes::complete::{tag, tag_no_case, is_not, take_while_m_n, take_while1},
-    character::complete::{multispace0, multispace1},
-    sequence::{preceded, delimited, tuple, terminated},
-    combinator::{map_res, eof, iterator},
-    multi::{many1},
-    error::{Error, ErrorKind, ParseError},
-    Err,
-  };
+#[allow(unused_imports)]
 use log::{info, debug, error, trace};
 use std::str;
-use nom::Finish;
+use nom::{
+    IResult,
+    bytes::complete::{tag, tag_no_case, take_while1},
+    character::complete::{multispace0, multispace1},
+    sequence::{preceded, delimited, terminated},
+    combinator::{eof, iterator},
+    error::{Error, ErrorKind, ParseError},
+    Err,
+    Finish
+};
+
 
 #[macro_use]
 mod helper;

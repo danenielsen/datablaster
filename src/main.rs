@@ -10,19 +10,17 @@ use std::str;
 use std::io::Write;
 use log::Record;
 use env_logger::fmt::Formatter;
-use env_logger::Env;
 use log::LevelFilter;
 #[allow(unused_imports)]
 use log::{info, error, debug, trace, warn};
-use definition::schema::{FieldType, RecordSchema, FieldSchema, FieldDefinition};
-use definition::gen::DataFunctionGenerator;
+use definition::schema::{FieldType, RecordSchema};
 use std::fs::File;
 use data_gen::*;
 use writer::*;
 use writer::json::TupleToJsonSerializer;
 use writer::csv::TupleToCSVSerializer;
 use parser::*;
-use nom::Finish;
+
 
 fn iterate_over_schema(schema: &RecordSchema, ) {
     iterate_over_schema_internal(schema, "")
