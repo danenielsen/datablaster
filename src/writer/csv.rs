@@ -1,7 +1,6 @@
-use crate::data_repr::*;
-use crate::data_repr::ColumnData;
 use super::*;
-
+use crate::data_repr::ColumnData;
+use crate::data_repr::*;
 
 pub struct TupleToCSVSerializer {}
 
@@ -12,8 +11,12 @@ impl TupleToCSVSerializer {
 }
 
 impl TupleSerializer for TupleToCSVSerializer {
-    fn supports_list(&self) -> bool { false }
-    fn supports_record(&self) -> bool { false }
+    fn supports_list(&self) -> bool {
+        false
+    }
+    fn supports_record(&self) -> bool {
+        false
+    }
 
     fn tuple_to_string(&self, tuple: &Tuple) -> String {
         let mut row: Vec<String> = vec![];

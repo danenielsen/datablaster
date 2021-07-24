@@ -1,6 +1,5 @@
-use std::fmt::Debug;
 use rand::prelude::*;
-
+use std::fmt::Debug;
 
 /**
  * DataGenerator
@@ -45,7 +44,6 @@ impl<T: 'static + Debug + Clone> DataGenerator<T> for DataFunctionGenerator<T> {
     }
 }
 
-
 /**
  * Default Generators
  */
@@ -56,13 +54,17 @@ pub trait DefaultGenerator {
 
 impl DefaultGenerator for i64 {
     fn default_gen() -> Box<dyn DataGenerator<Self>> {
-        Box::new(DataFunctionGenerator::new(|| rand::thread_rng().gen_range(0..100)))
+        Box::new(DataFunctionGenerator::new(|| {
+            rand::thread_rng().gen_range(0..100)
+        }))
     }
 }
 
 impl DefaultGenerator for f64 {
     fn default_gen() -> Box<dyn DataGenerator<Self>> {
-        Box::new(DataFunctionGenerator::new(|| rand::thread_rng().gen_range(0.0..100.0)))
+        Box::new(DataFunctionGenerator::new(|| {
+            rand::thread_rng().gen_range(0.0..100.0)
+        }))
     }
 }
 

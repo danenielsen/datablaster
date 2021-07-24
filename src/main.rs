@@ -1,44 +1,46 @@
 mod args;
-mod definition;
-mod data_repr;
 mod data_gen;
-mod writer;
+mod data_repr;
+mod definition;
 mod parser;
+mod writer;
 
-use std::fs;
-use std::str;
-use std::io::Write;
-use log::Record;
+use data_gen::*;
+use definition::schema::{FieldType, RecordSchema};
 use env_logger::fmt::Formatter;
 use log::LevelFilter;
+use log::Record;
 #[allow(unused_imports)]
-use log::{info, error, debug, trace, warn};
-use definition::schema::{FieldType, RecordSchema};
-use std::fs::File;
-use data_gen::*;
-use writer::*;
-use writer::json::TupleToJsonSerializer;
-use writer::csv::TupleToCSVSerializer;
+use log::{debug, error, info, trace, warn};
 use parser::*;
+use std::fs;
+use std::fs::File;
+use std::io::Write;
+use std::str;
+use writer::csv::TupleToCSVSerializer;
+use writer::json::TupleToJsonSerializer;
+use writer::*;
 
-
-fn iterate_over_schema(schema: &RecordSchema, ) {
+fn iterate_over_schema(schema: &RecordSchema) {
     iterate_over_schema_internal(schema, "")
 }
-
 
 pub fn iterate_over_schema_internal(schema: &RecordSchema, indent: &str) {
     for (i, col_schema) in schema.iter().enumerate() {
         match col_schema.get_type() {
             FieldType::Record(rs) => {
-                info!("{}{}: ColumnSchema {{ name: \"{}\", col_type: \"Record\" }}", indent, i, col_schema.get_name());
+                info!(
+                    "{}{}: ColumnSchema {{ name: \"{}\", col_type: \"Record\" }}",
+                    indent,
+                    i,
+                    col_schema.get_name()
+                );
                 iterate_over_schema_internal(rs, [indent, "  "].join("").as_str())
-            },
+            }
             _ => info!("{}{}: {:?}", indent, i, col_schema),
         };
     }
 }
-
 
 fn main() {
     let matches = args::parse_args();
@@ -53,7 +55,7 @@ fn main() {
 
     // Init logger
     let log_level = match matches.occurrences_of(args::VERBOSE) {
-        0 => LevelFilter::Info, // No verbose
+        0 => LevelFilter::Info,  // No verbose
         1 => LevelFilter::Debug, // -v
         _ => LevelFilter::Trace, // -vv
     };
@@ -77,7 +79,7 @@ fn main() {
 
     let schema_file_string = fs::read_to_string(schema_file).unwrap();
     let parse_result = parse(&schema_file_string);
-    
+
     let schema = match parse_result {
         Ok(r) => r,
         Err(e) => panic!("\nParse Error: {:?}\non input: ```{}```", e.code, e.input),
@@ -129,7 +131,7 @@ fn main() {
         panic!("Lists not supported")
     }
     let file_writer = writer::FileWriter::new(tuple_serializer);
-    
+
     let mut file = File::create(output_file).expect("Couldn't open file");
     info!("Writing out to file");
     let mut next_print = 1;
@@ -137,7 +139,7 @@ fn main() {
         let output_data = create_data_from_schema(&schema);
         file_writer.write_to_file(&output_data, &mut file);
         if next_print <= i + 1 {
-            info!("Wrote {} records to file", i+1);
+            info!("Wrote {} records to file", i + 1);
             next_print *= 10;
         }
     }

@@ -6,14 +6,14 @@ use super::gen::{DataGenerator, DefaultGenerator};
 #[derive(Debug, Clone)]
 pub struct FieldSchema {
     name: String,
-    field_type: FieldType
+    field_type: FieldType,
 }
 
 impl FieldSchema {
     pub fn new<S: Into<String>>(name: S, field_type: FieldType) -> Self {
         FieldSchema {
             name: name.into(),
-            field_type
+            field_type,
         }
     }
 
@@ -25,7 +25,6 @@ impl FieldSchema {
         &self.field_type
     }
 }
-
 
 /**
  * FieldDefinition
@@ -51,7 +50,6 @@ impl<T: DefaultGenerator> Default for FieldDefinition<T> {
     }
 }
 
-
 /**
  * FieldType
  */
@@ -63,7 +61,6 @@ pub enum FieldType {
     List(Box<FieldType>),
     Record(RecordSchema),
 }
-
 
 /**
  * RecordSchema
@@ -83,7 +80,7 @@ impl RecordSchema {
             contains_list: false,
         }
     }
-    
+
     pub fn iter(&self) -> impl Iterator<Item = &FieldSchema> {
         self.field_list.iter()
     }
