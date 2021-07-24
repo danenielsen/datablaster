@@ -2,5 +2,8 @@ table Employees (
 	name STRING,
 	age INTEGER,
     salary FLOAT,
-	managers STRING,
+	managers list(STRING),
+	facts record(
+		year_started INTEGER,
+	),
 );

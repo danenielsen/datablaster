@@ -7,7 +7,11 @@ mod parser;
 
 use std::fs;
 use std::str;
+use std::io::Write;
+use log::Record;
+use env_logger::fmt::Formatter;
 use env_logger::Env;
+use log::LevelFilter;
 #[allow(unused_imports)]
 use log::{info, error, debug, trace, warn};
 use definition::schema::{FieldType, RecordSchema, FieldSchema, FieldDefinition};
@@ -51,24 +55,37 @@ fn main() {
 
     // Init logger
     let log_level = match matches.occurrences_of(args::VERBOSE) {
-        0 => "info",
-        1 => "debug",
-        _ => "trace",
+        0 => LevelFilter::Info, // No verbose
+        1 => LevelFilter::Debug, // -v
+        _ => LevelFilter::Trace, // -vv
     };
-    env_logger::init_from_env(Env::default().default_filter_or(log_level));
+    env_logger::Builder::from_default_env()
+        .format(|buf: &mut Formatter, record: &Record| {
+            write!(buf, "[{}", buf.timestamp_seconds())?;
+            let level_style = buf.default_level_style(record.level());
+            write!(buf, " {}", level_style.value(record.level()))?;
+            match (record.module_path(), record.line()) {
+                (Some(module_path), Some(line)) => write!(buf, " {}:{}", module_path, line)?,
+                (Some(module_path), _) => write!(buf, " {}", module_path)?,
+                _ => (),
+            };
+            writeln!(buf, "] {}", record.args())
+        })
+        .filter(None, log_level)
+        .init();
     info!("info");
     debug!("debug");
     trace!("trace");
 
     let schema_file_string = fs::read_to_string(schema_file).unwrap();
-    let parse_result = parser(&schema_file_string);
+    let parse_result = parse(&schema_file_string);
     
-    match parse_result.finish() {
-        Ok(k) => (),
-        Err(e) => error!("\nParse Error: {:?}\non input: ```{}```", e.code, e.input),
-    }
-    return;
+    let schema = match parse_result {
+        Ok(r) => r,
+        Err(e) => panic!("\nParse Error: {:?}\non input: ```{}```", e.code, e.input),
+    };
 
+    /*
     let schema = RecordSchema::new()
         .with_field(FieldSchema::new("total", FieldType::Float(Default::default())))
         .with_field(FieldSchema::new("transaction_id", FieldType::Integer(Default::default())))
@@ -94,7 +111,6 @@ fn main() {
         ))
     ;
 
-    /*
     let schema = RecordSchema::new()
         .with_field(FieldSchema::new("id", FieldType::Integer(Default::default())))
         .with_field(FieldSchema::new("fname", FieldType::String(FieldDefinition::new(Box::new(DataFunctionGenerator::new(|| "fname".to_string()))))))
