@@ -4,6 +4,12 @@ table Employees (
     salary FLOAT,
 	managers list(STRING),
 	facts record(
-		year_started INTEGER,
+		start_year INTEGER,
+		end_year INTEGER,
+		commendations list(STRING),
+		subordinates list(record(
+			first_name STRING,
+			last_name String,
+		)),
 	),
 );

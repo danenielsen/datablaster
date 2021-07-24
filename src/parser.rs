@@ -3,7 +3,7 @@ use crate::definition::schema::RecordSchema;
 use std::fmt::Debug;
 use nom::{
     IResult,
-    bytes::complete::{tag, is_not, take_while_m_n, take_while1},
+    bytes::complete::{tag, tag_no_case, is_not, take_while_m_n, take_while1},
     character::complete::{multispace0, multispace1},
     sequence::{preceded, delimited, tuple, terminated},
     combinator::{map_res, eof, iterator},
@@ -20,7 +20,7 @@ mod helper;
 
 
 fn obj_declaration(input: &str) -> IResult<&str, &str> {
-    tag("table")(input)
+    tag_no_case("table")(input)
 }
 
 fn token_named(input: &str) -> IResult<&str, &str> {
@@ -46,6 +46,11 @@ fn field_type(input: &str) -> IResult<&str, FieldType> {
         f if f.to_lowercase() == "list" => {
             let (i, field) = delimited(tag("("), field_type, tag(")"))(i)?;
             Ok((i, FieldType::List(Box::new(field))))
+        },
+        f if f.to_lowercase() == "record" => {
+            let (i, fields) = delimited(tag("("), take_till_delimiter_closed('(', ')'), tag(")"))(i)?;
+            let (_, record) = table_record(fields)?;
+            Ok((i, FieldType::Record(record)))
         },
         f => {
             error!("Unknown field type: {}", f);
