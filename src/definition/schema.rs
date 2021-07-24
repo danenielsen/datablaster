@@ -92,6 +92,7 @@ impl RecordSchema {
         match &column.field_type {
             FieldType::Record(r) => {
                 self.contains_record = true;
+
                 // If the record contains a list, also set list
                 if r.contains_list() {
                     self.contains_list = true;
