@@ -6,7 +6,6 @@ mod parser;
 mod writer;
 
 use data_gen::*;
-use definition::schema::{FieldType, RecordSchema};
 use env_logger::fmt::Formatter;
 use log::LevelFilter;
 use log::Record;
@@ -16,31 +15,9 @@ use parser::*;
 use std::fs;
 use std::fs::File;
 use std::io::Write;
-use std::str;
 use writer::csv::TupleToCSVSerializer;
 use writer::json::TupleToJsonSerializer;
 use writer::*;
-
-fn iterate_over_schema(schema: &RecordSchema) {
-    iterate_over_schema_internal(schema, "")
-}
-
-pub fn iterate_over_schema_internal(schema: &RecordSchema, indent: &str) {
-    for (i, col_schema) in schema.iter().enumerate() {
-        match col_schema.get_type() {
-            FieldType::Record(rs) => {
-                info!(
-                    "{}{}: ColumnSchema {{ name: \"{}\", col_type: \"Record\" }}",
-                    indent,
-                    i,
-                    col_schema.get_name()
-                );
-                iterate_over_schema_internal(rs, [indent, "  "].join("").as_str())
-            }
-            _ => info!("{}{}: {:?}", indent, i, col_schema),
-        };
-    }
-}
 
 fn main() {
     let matches = args::parse_args();
