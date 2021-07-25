@@ -1,7 +1,7 @@
 use super::*;
-use std::io::Write;
 use crate::data_repr::ColumnData;
 use crate::data_repr::*;
+use std::io::Write;
 
 pub struct TupleToCSVSerializer<T: Write> {
     writer: T,

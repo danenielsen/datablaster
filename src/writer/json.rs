@@ -1,11 +1,10 @@
 extern crate serde_json;
 
 use super::*;
-use std::fs::File;
-use std::io::Write;
 use crate::data_repr::ColumnData;
 use crate::data_repr::*;
 use serde_json::{json, to_string_pretty, Map, Value};
+use std::io::Write;
 
 pub struct TupleToJsonSerializer<T: Write> {
     wrt: T,

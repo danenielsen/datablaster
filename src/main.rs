@@ -136,7 +136,7 @@ fn main() {
     let mut next_print = 1;
     for i in 0..number_of_records {
         let output_data = create_data_from_schema(&schema);
-        if let Err(e) = tuple_serializer.write_tuple(&output_data){
+        if let Err(e) = tuple_serializer.write_tuple(&output_data) {
             panic!("Error writing tuple: {}", e)
         };
         if next_print <= i + 1 {
@@ -146,7 +146,7 @@ fn main() {
     }
     match tuple_serializer.flush() {
         Ok(_) => (),
-        Err(e) => error!("Error while flushing writer: {}", e)
+        Err(e) => error!("Error while flushing writer: {}", e),
     }
 
     info!("{} records written to file", number_of_records);
