@@ -1,16 +1,19 @@
 use super::*;
+use std::io::Write;
 use crate::data_repr::ColumnData;
 use crate::data_repr::*;
 
-pub struct TupleToCSVSerializer {}
+pub struct TupleToCSVSerializer<T: Write> {
+    writer: T,
+}
 
-impl TupleToCSVSerializer {
-    pub fn new() -> Self {
-        TupleToCSVSerializer {}
+impl<T: Write> TupleToCSVSerializer<T> {
+    pub fn new(writer: T) -> Self {
+        TupleToCSVSerializer { writer }
     }
 }
 
-impl TupleSerializer for TupleToCSVSerializer {
+impl<T: Write> TupleWriter for TupleToCSVSerializer<T> {
     fn supports_list(&self) -> bool {
         false
     }
@@ -18,7 +21,7 @@ impl TupleSerializer for TupleToCSVSerializer {
         false
     }
 
-    fn tuple_to_string(&self, tuple: &Tuple) -> String {
+    fn write_tuple(&mut self, tuple: &Tuple) -> std::io::Result<()> {
         let mut row: Vec<String> = vec![];
         for (_, data) in tuple {
             match data {
@@ -29,6 +32,11 @@ impl TupleSerializer for TupleToCSVSerializer {
                 ColumnData::List(_) => panic!("List not supported"),
             }
         }
-        row.join(",")
+        let output = row.join(",");
+        self.writer.write_all(output.as_bytes())
+    }
+
+    fn flush(&mut self) -> std::io::Result<()> {
+        self.writer.flush()
     }
 }

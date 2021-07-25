@@ -119,9 +119,10 @@ fn main() {
     ;
     */
 
-    let tuple_serializer: Box<dyn TupleSerializer> = match output_file_format {
-        "csv" => Box::new(TupleToCSVSerializer::new()),
-        "json" => Box::new(TupleToJsonSerializer::new(false)),
+    let file = File::create(output_file).expect(&format!("Could not create file {}", output_file));
+    let mut tuple_serializer: Box<dyn TupleWriter> = match output_file_format {
+        "csv" => Box::new(TupleToCSVSerializer::new(file)),
+        "json" => Box::new(TupleToJsonSerializer::new(file, false)),
         _ => panic!("Unknown output format: {}", output_file_format),
     };
     if schema.contains_record() && !tuple_serializer.supports_record() {
@@ -130,18 +131,22 @@ fn main() {
     if schema.contains_list() && !tuple_serializer.supports_list() {
         panic!("Lists not supported")
     }
-    let file_writer = writer::FileWriter::new(tuple_serializer);
 
-    let mut file = File::create(output_file).expect("Couldn't open file");
     info!("Writing out to file");
     let mut next_print = 1;
     for i in 0..number_of_records {
         let output_data = create_data_from_schema(&schema);
-        file_writer.write_to_file(&output_data, &mut file);
+        if let Err(e) = tuple_serializer.write_tuple(&output_data){
+            panic!("Error writing tuple: {}", e)
+        };
         if next_print <= i + 1 {
             info!("Wrote {} records to file", i + 1);
             next_print *= 10;
         }
+    }
+    match tuple_serializer.flush() {
+        Ok(_) => (),
+        Err(e) => error!("Error while flushing writer: {}", e)
     }
 
     info!("{} records written to file", number_of_records);
