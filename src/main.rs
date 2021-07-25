@@ -53,11 +53,9 @@ fn run() -> Result<(), Box<dyn Error>> {
         })
         .filter(None, log_level)
         .init();
-    info!("info");
-    debug!("debug");
-    trace!("trace");
 
-    let schema_file_string = fs::read_to_string(schema_file)?;
+    let schema_file_string =
+        fs::read_to_string(schema_file).map_err(|e| format!("{} - {}", schema_file, e))?;
     let schema = parse(&schema_file_string)?;
 
     //let schema = parse_result.map_err(|e| format!("\nParse Error: {:?}\non input: ```{}```", e.code, e.input))?;
@@ -96,7 +94,7 @@ fn run() -> Result<(), Box<dyn Error>> {
     ;
     */
 
-    let file = File::create(output_file)?;
+    let file = File::create(output_file).map_err(|e| format!("{} - {}", output_file, e))?;
     let mut tuple_serializer: Box<dyn TupleWriter> = match output_file_format {
         "csv" => Box::new(TupleToCSVSerializer::new(file)),
         "json" => Box::new(TupleToJsonSerializer::new(file, false)),
