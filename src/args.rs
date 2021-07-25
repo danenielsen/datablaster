@@ -1,10 +1,10 @@
 extern crate clap;
 use clap::{App, Arg, ArgMatches};
 
-pub const RECORDS_TO_CREATE: &str = "count";
+pub const RECORDS_TO_CREATE: &str = "COUNT";
 pub const OUTPUT_FILE: &str = "OUTPUT_FILE";
 pub const FORMAT: &str = "FILE_FORMAT";
-pub const SCHEMA: &str = "SCHEMA";
+pub const SCHEMA: &str = "SCHEMA_FILE";
 pub const VERBOSE: &str = "VERBOSE";
 
 pub fn parse_args<'a>() -> ArgMatches<'a> {
@@ -37,7 +37,7 @@ pub fn parse_args<'a>() -> ArgMatches<'a> {
         .arg(
             Arg::with_name(VERBOSE)
                 .short("v")
-                .help("Verbose")
+                .help("Verbose. Include multiple times for more verbosity")
                 .multiple(true),
         )
         .arg(
