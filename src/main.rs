@@ -107,7 +107,7 @@ fn run() -> Result<(), Box<dyn Error>> {
         return Err("Lists not supported".into());
     }
 
-    info!("Writing out to file");
+    info!("Writing {} records to {}", number_of_records, output_file);
     let mut next_print = 1;
     for i in 0..number_of_records {
         let output_data = create_data_from_schema(&schema);
@@ -115,13 +115,13 @@ fn run() -> Result<(), Box<dyn Error>> {
             return Err(format!("Error writing tuple: {}", e).into());
         };
         if next_print <= i + 1 {
-            info!("Wrote {} records to file", i + 1);
+            info!("Wrote {} records", i + 1);
             next_print *= 10;
         }
     }
     tuple_serializer.flush()?;
 
-    info!("{} records written to file", number_of_records);
+    info!("{} records written to {}", number_of_records, output_file);
     Ok(())
 }
 
