@@ -8,7 +8,7 @@ pub const SCHEMA: &str = "SCHEMA_FILE";
 pub const VERBOSE: &str = "VERBOSE";
 
 pub fn parse_args<'a>() -> ArgMatches<'a> {
-    let matches = App::new("DataMe")
+    let matches = App::new("Data Blaster")
         .about("Creates data")
         .arg(
             Arg::with_name(RECORDS_TO_CREATE)
