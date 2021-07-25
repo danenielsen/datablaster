@@ -1,7 +1,7 @@
 use super::*;
 use crate::data_repr::ColumnData;
 use crate::data_repr::*;
-use std::io::Write;
+use std::io::{Error, ErrorKind, Write};
 
 pub struct TupleToCSVSerializer<T: Write> {
     writer: T,
@@ -28,8 +28,18 @@ impl<T: Write> TupleWriter for TupleToCSVSerializer<T> {
                 ColumnData::Integer(v) => row.push(v.to_string()),
                 ColumnData::Float(v) => row.push(v.to_string()),
                 ColumnData::String(v) => row.push(v.to_string()),
-                ColumnData::Record(_) => panic!("Record not supported"),
-                ColumnData::List(_) => panic!("List not supported"),
+                ColumnData::Record(_) => {
+                    return Err(Error::new(
+                        ErrorKind::InvalidInput,
+                        "Record not supported by CSV",
+                    ))
+                }
+                ColumnData::List(_) => {
+                    return Err(Error::new(
+                        ErrorKind::InvalidInput,
+                        "List not supported by CSV",
+                    ))
+                }
             }
         }
         let output = row.join(",");

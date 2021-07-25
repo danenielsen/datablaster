@@ -120,7 +120,7 @@ pub fn parser(input: &str) -> IResult<&str, RecordSchema> {
     Ok(("", record))
 }
 
-pub fn parse(input: &str) -> Result<RecordSchema, nom::error::Error<&str>> {
-    let (_, record) = parser(input).finish()?;
+pub fn parse(input: &str) -> Result<RecordSchema, String> {
+    let (_, record) = parser(input).finish().map_err(|e| e.to_string())?;
     Ok(record)
 }

@@ -16,12 +16,9 @@ impl<T: Write> TupleToJsonSerializer<T> {
         TupleToJsonSerializer { wrt, pretty_print }
     }
 
-    pub fn to_pretty_json_data(&self, tuple: &Tuple) -> String {
+    pub fn to_pretty_json_data(&self, tuple: &Tuple) -> Result<String, serde_json::Error> {
         let output_value = self.to_json_data_recurse(tuple);
-        match to_string_pretty(&output_value) {
-            Err(e) => panic!("Error converting to pretty print json: {}", e),
-            Ok(s) => s,
-        }
+        to_string_pretty(&output_value)
     }
 
     fn to_json_data_recurse(&self, tuple: &Tuple) -> Value {
@@ -62,7 +59,7 @@ impl<T: Write> TupleWriter for TupleToJsonSerializer<T> {
 
     fn write_tuple(&mut self, tuple: &Tuple) -> std::io::Result<()> {
         let mut record = if self.pretty_print {
-            self.to_pretty_json_data(tuple)
+            self.to_pretty_json_data(tuple)?
         } else {
             self.to_json_data_recurse(tuple).to_string()
         };
